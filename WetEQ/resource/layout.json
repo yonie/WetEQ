@@ -15,7 +15,7 @@
         55,
         55
       ],
-      "frames": 11,
+      "frames": 9,
       "tag": "kHFGainParam"
     },
     "hf_freq": {
@@ -27,7 +27,7 @@
         55,
         55
       ],
-      "frames": 10,
+      "frames": 9,
       "tag": "kHFFreqParam"
     },
     "hmf_gain": {
@@ -39,7 +39,7 @@
         56,
         56
       ],
-      "frames": 11,
+      "frames": 9,
       "tag": "kHMFGainParam"
     },
     "hmf_freq": {
@@ -51,7 +51,7 @@
         60,
         60
       ],
-      "frames": 10,
+      "frames": 9,
       "tag": "kHMFFreqParam"
     },
     "gain": {
@@ -63,7 +63,7 @@
         71,
         71
       ],
-      "frames": 11,
+      "frames": 9,
       "tag": "kGainParam"
     },
     "lmf_gain": {
@@ -75,7 +75,7 @@
         60,
         60
       ],
-      "frames": 11,
+      "frames": 9,
       "tag": "kLMFGainParam"
     },
     "lmf_freq": {
@@ -87,7 +87,7 @@
         60,
         60
       ],
-      "frames": 10,
+      "frames": 9,
       "tag": "kLMFFreqParam"
     },
     "hpf": {
@@ -99,7 +99,7 @@
         60,
         60
       ],
-      "frames": 10,
+      "frames": 9,
       "tag": "kHPFParam"
     },
     "lpf": {
@@ -111,7 +111,7 @@
         57,
         57
       ],
-      "frames": 10,
+      "frames": 9,
       "tag": "kLPFParam"
     },
     "lf_gain": {
@@ -123,7 +123,7 @@
         60,
         60
       ],
-      "frames": 11,
+      "frames": 9,
       "tag": "kLFGainParam"
     },
     "lf_freq": {
@@ -135,7 +135,7 @@
         60,
         60
       ],
-      "frames": 10,
+      "frames": 9,
       "tag": "kLFFreqParam"
     }
   },

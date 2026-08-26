@@ -60,7 +60,7 @@
 		      origin="295, 127"
 		      size="55, 55"
 		      bitmap="knob_hf_gain"
-		      step-count="11"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -68,7 +68,7 @@
 		      origin="424, 127"
 		      size="55, 55"
 		      bitmap="knob_hf_freq"
-		      step-count="10"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -76,7 +76,7 @@
 		      origin="294, 310"
 		      size="56, 56"
 		      bitmap="knob_hmf_gain"
-		      step-count="11"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -84,7 +84,7 @@
 		      origin="422, 306"
 		      size="60, 60"
 		      bitmap="knob_hmf_freq"
-		      step-count="10"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -92,7 +92,7 @@
 		      origin="94, 431"
 		      size="71, 71"
 		      bitmap="knob_gain"
-		      step-count="11"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -100,7 +100,7 @@
 		      origin="292, 489"
 		      size="60, 60"
 		      bitmap="knob_lmf_gain"
-		      step-count="11"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -108,7 +108,7 @@
 		      origin="421, 489"
 		      size="60, 60"
 		      bitmap="knob_lmf_freq"
-		      step-count="10"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -116,7 +116,7 @@
 		      origin="42, 619"
 		      size="60, 60"
 		      bitmap="knob_hpf"
-		      step-count="10"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -124,7 +124,7 @@
 		      origin="158, 619"
 		      size="57, 57"
 		      bitmap="knob_lpf"
-		      step-count="10"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -132,7 +132,7 @@
 		      origin="292, 671"
 		      size="60, 60"
 		      bitmap="knob_lf_gain"
-		      step-count="11"
+		      step-count="9"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -140,7 +140,7 @@
 		      origin="422, 671"
 		      size="60, 60"
 		      bitmap="knob_lf_freq"
-		      step-count="10"
+		      step-count="9"
 		      transparent="true"/>
 
 	</template>
@@ -154,47 +154,47 @@
 		<bitmap name="backplate" path="backplate.png"/>
 		<bitmap name="knob_hf_gain" path="knob_hf_gain.png"
 		        multiframe-size="55, 55"
-		        multiframe-num-frames="11"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hf_freq" path="knob_hf_freq.png"
 		        multiframe-size="55, 55"
-		        multiframe-num-frames="10"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hmf_gain" path="knob_hmf_gain.png"
 		        multiframe-size="56, 56"
-		        multiframe-num-frames="11"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hmf_freq" path="knob_hmf_freq.png"
 		        multiframe-size="60, 60"
-		        multiframe-num-frames="10"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_gain" path="knob_gain.png"
 		        multiframe-size="71, 71"
-		        multiframe-num-frames="11"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lmf_gain" path="knob_lmf_gain.png"
 		        multiframe-size="60, 60"
-		        multiframe-num-frames="11"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lmf_freq" path="knob_lmf_freq.png"
 		        multiframe-size="60, 60"
-		        multiframe-num-frames="10"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hpf" path="knob_hpf.png"
 		        multiframe-size="60, 60"
-		        multiframe-num-frames="10"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lpf" path="knob_lpf.png"
 		        multiframe-size="57, 57"
-		        multiframe-num-frames="10"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lf_gain" path="knob_lf_gain.png"
 		        multiframe-size="60, 60"
-		        multiframe-num-frames="11"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lf_freq" path="knob_lf_freq.png"
 		        multiframe-size="60, 60"
-		        multiframe-num-frames="10"
+		        multiframe-num-frames="9"
 		        mulitframe-frames-per-row="1"/>
 	</bitmaps>
 </vstgui-ui-description>
