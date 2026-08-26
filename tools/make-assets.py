@@ -85,6 +85,16 @@ METERS = {
 }
 METER_SEGMENTS = 12
 
+# The drawn LED stack is deliberately NARROWER than the blacked-out window and
+# has a wide gap. At 30 px wide with a 1 px gap the segments were 30 x 17.8
+# slabs separated by a single pixel - nearly 9:1 - and the meter read as one bar
+# changing colour rather than as twelve LEDs. WetReverb gets away with a small
+# gap because its meters are long and thin (265 x 16), so the gap is
+# proportionally far more visible. Inset and gap bring WetEQ into the same
+# proportion; the art behind is already black, so the inset just shows more of it.
+METER_INSET = 0         # px off each side of the painted window
+METER_GAP = 5           # px of black between segments
+
 
 def lighting_field(knob, blur_frac=LIGHT_BLUR):
     """The lamp, not the detail: low-frequency luminance of the knob."""
@@ -123,10 +133,14 @@ def main():
     # pixel; one row of painted LED peeking past the view's top edge reads as a
     # meter stuck at full scale. Belt and braces: nothing colourful is left
     # underneath. The 2 px inset keeps the painted recess bevel intact.
+    # Pad OUTWARDS, never inwards. The drawn LED stack is inset from this
+    # window (METER_INSET), so anything the blackening fails to reach shows as a
+    # coloured fringe down both sides of the meter - which is exactly what an
+    # inset here produced.
     art = ImageDraw.Draw(panel)
     for (x0, y0, x1, y1) in METERS.values():
-        art.rectangle([round(x0 * scale) + 2, round(y0 * scale) + 2,
-                       round(x1 * scale) - 2, round(y1 * scale) - 2],
+        art.rectangle([round(x0 * scale) - 2, round(y0 * scale) - 2,
+                       round(x1 * scale) + 2, round(y1 * scale) + 2],
                       fill=(0, 0, 0))
 
     panel.save(os.path.join(OUT, 'backplate.png'))
@@ -161,8 +175,9 @@ def main():
               f'origin=({ox},{oy})  {tag}')
 
     for tag, (x0, y0, x1, y1) in METERS.items():
-        ox, oy = int(round(x0 * scale)), int(round(y0 * scale))
-        w, h = int(round((x1 - x0) * scale)), int(round((y1 - y0) * scale))
+        ox, oy = int(round(x0 * scale)) + METER_INSET, int(round(y0 * scale))
+        w = int(round((x1 - x0) * scale)) - 2 * METER_INSET
+        h = int(round((y1 - y0) * scale))
         layout['meters'][tag] = dict(origin=[ox, oy], size=[w, h],
                                      segments=METER_SEGMENTS)
         print(f'meter {tag}: origin=({ox},{oy}) size={w}x{h}')
