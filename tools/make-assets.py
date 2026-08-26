@@ -24,9 +24,14 @@ highlight back at the top while leaving every rotating detail alone.
 """
 import json
 import os
+import sys
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                '..', '..', 'tools'))
+import knob3d
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -44,45 +49,67 @@ STEPS = 9
 GAIN_STEPS = STEPS
 FREQ_STEPS = STEPS
 
+CAP_SATURATION = 1.30   # how far past the painted colour the caps are pushed
+
 LIGHT_BLUR = 0.18       # lighting field = luminance blurred by this x diameter
 LIGHT_CLIP = (0.55, 1.85)   # bound the correction so dark knobs cannot blow up
 
-# name, centre x, centre y, radius (measured on the 1024x1536 original),
+# name, centre x, centre y, TICK-RING radius (on the 1024x1536 original),
 # control tag, step count
 #
-# The nine coloured/light knobs were located with tools/backplate-map.py and
-# confirmed by eye against the rendered hitboxes.
+# Centres and ring radii come from fitting a circle to the ring of tick dots
+# painted around each knob. That works where body detection does not: the dots
+# are light on a dark panel for every knob INCLUDING the two black LF ones,
+# which have no detectable body edge at all.
 #
-# The two black LF knobs defeat every direct measurement: Hough finds no circle
-# (black body on a black panel), a dark-mass centroid is dragged off by the
-# drop shadows, and a tick-dot ring fit picks up the numerals - that last method
-# returned (590,1027) for a knob known to sit at (619,996), so it was discarded.
+# Two filters make the fit trustworthy. The sweep is 270 degrees, so the bottom
+# 90 has no dots - anything found down there is the numeral row ("-15", "600"),
+# and including it drags the centre several pixels down, which is exactly what
+# the first attempt did. And real dots are all one size, so blobs far off the
+# median area are glyph fragments.
 #
-# They come from the grid instead, which is regular and independently checked:
-# rows at y 296 / 649 / 996 give a mean pitch of 350, so LF sits at 1346; the
-# two columns are x 619 and 867 in all three known bands. Verified afterwards
-# by rendering the hitboxes and looking at them.
+# The result is self-checking: every small knob came out with a ring radius of
+# 78-80 px and GAIN with 107, and the columns landed on x 619 / 866 to within a
+# pixel. A panel laid out on a regular grid should do exactly that.
 KNOBS = [
-    ('hf_gain',   619,  296, 57, 'kHFGainParam',  GAIN_STEPS),
-    ('hf_freq',   867,  297, 57, 'kHFFreqParam',  FREQ_STEPS),
-    ('hmf_gain',  619,  649, 58, 'kHMFGainParam', GAIN_STEPS),
-    ('hmf_freq',  867,  646, 62, 'kHMFFreqParam', FREQ_STEPS),
-    ('gain',      249,  896, 72, 'kGainParam',    GAIN_STEPS),
-    ('lmf_gain',  619,  996, 62, 'kLMFGainParam', GAIN_STEPS),
-    ('lmf_freq',  866,  996, 62, 'kLMFFreqParam', FREQ_STEPS),
-    ('hpf',       138, 1247, 62, 'kHPFParam',     FREQ_STEPS),
-    ('lpf',       358, 1243, 59, 'kLPFParam',     FREQ_STEPS),
-    ('lf_gain',   619, 1346, 62, 'kLFGainParam',  GAIN_STEPS),
-    ('lf_freq',   867, 1346, 62, 'kLFFreqParam',  FREQ_STEPS),
+    ('hf_gain',   619.1,  301.5, 78.9, 'kHFGainParam',  GAIN_STEPS),
+    ('hf_freq',   866.7,  301.6, 79.2, 'kHFFreqParam',  FREQ_STEPS),
+    ('hmf_gain',  618.9,  653.3, 78.9, 'kHMFGainParam', GAIN_STEPS),
+    ('hmf_freq',  865.0,  639.7, 79.2, 'kHMFFreqParam', FREQ_STEPS),
+    ('gain',      251.1,  898.8, 107.5, 'kGainParam',   GAIN_STEPS),
+    ('lmf_gain',  619.0, 1003.5, 79.0, 'kLMFGainParam', GAIN_STEPS),
+    ('lmf_freq',  866.6, 1003.6, 79.3, 'kLMFFreqParam', FREQ_STEPS),
+    ('hpf',       139.5, 1247.6, 80.0, 'kHPFParam',     FREQ_STEPS),
+    ('lpf',       359.5, 1247.6, 79.9, 'kLPFParam',     FREQ_STEPS),
+    ('lf_gain',   619.6, 1336.1, 78.3, 'kLFGainParam',  GAIN_STEPS),
+    ('lf_freq',   866.6, 1337.3, 79.3, 'kLFFreqParam',  FREQ_STEPS),
 ]
 
-# 12 segments each. Bounds are the LIT pixel extent padded outwards: the art has
-# every LED lit, so LEDMeterView must cover the painted strip completely or a
-# full-scale LED peeks out at the edge and the meter looks permanently pinned.
-METERS = {
+# Meter geometry, in original-art coordinates.
+#
+# METER_PAINTED is the extent of the LEDs painted into the render. Those get
+# blacked out (below) so nothing shows through the drawn ones - but ONLY those.
+# Blacking the whole recess instead destroys the painted bevel around it, and
+# the meter then reads as a black box stuck on the panel rather than a window
+# sunk into it. The bevel is backplate art and must survive.
+#
+# The drawn stack is inset inside that by METER_MARGIN, so it has breathing room
+# on every side. The previous values did the opposite - they were the painted
+# extent "padded outwards", so the drawn rectangles were LARGER than the thing
+# they replace and sat hard against the bevel. Measured on a live capture that
+# left 3 px of margin on the left and 5 on the right, reading as both cramped
+# and off-centre.
+METER_PAINTED = {
     'kInputMeter':  (153, 198, 211, 652),
     'kOutputMeter': (316, 198, 374, 652),
 }
+METER_MARGIN_X = 4      # art px inset from the painted LEDs, each side
+METER_MARGIN_Y = 8
+
+METERS = {tag: (x0 + METER_MARGIN_X, y0 + METER_MARGIN_Y,
+                x1 - METER_MARGIN_X, y1 - METER_MARGIN_Y)
+          for tag, (x0, y0, x1, y1) in METER_PAINTED.items()}
+
 METER_SEGMENTS = 12
 
 # The drawn LED stack is deliberately NARROWER than the blacked-out window and
@@ -93,7 +120,7 @@ METER_SEGMENTS = 12
 # proportionally far more visible. Inset and gap bring WetEQ into the same
 # proportion; the art behind is already black, so the inset just shows more of it.
 METER_INSET = 0         # px off each side of the painted window
-METER_GAP = 5           # px of black between segments
+METER_GAP = 4           # px of black between segments (art is 17% of pitch)
 
 
 def lighting_field(knob, blur_frac=LIGHT_BLUR):
@@ -138,9 +165,9 @@ def main():
     # coloured fringe down both sides of the meter - which is exactly what an
     # inset here produced.
     art = ImageDraw.Draw(panel)
-    for (x0, y0, x1, y1) in METERS.values():
-        art.rectangle([round(x0 * scale) - 2, round(y0 * scale) - 2,
-                       round(x1 * scale) + 2, round(y1 * scale) + 2],
+    for (x0, y0, x1, y1) in METER_PAINTED.values():
+        art.rectangle([round(x0 * scale) - 1, round(y0 * scale) - 1,
+                       round(x1 * scale) + 1, round(y1 * scale) + 1],
                       fill=(0, 0, 0))
 
     panel.save(os.path.join(OUT, 'backplate.png'))
@@ -148,31 +175,36 @@ def main():
 
     layout = {'panel': {'size': [tw, TARGET_H]}, 'knobs': {}, 'meters': {}}
 
-    for name, cx, cy, r, tag, steps in KNOBS:
-        rs = r - 4                                   # stay inside the tick dots
-        knob = src.crop((cx - rs, cy - rs, cx + rs, cy + rs)).convert('RGBA')
-        mask = Image.new('L', knob.size, 0)
-        ImageDraw.Draw(mask).ellipse([0, 0, knob.size[0] - 1, knob.size[1] - 1], fill=255)
-        knob.putalpha(mask)
+    for name, cx, cy, ring, tag, steps in KNOBS:
+        # Sample the painted cap colour from the middle of the knob, well inside
+        # the pointer and the skirt, so the 3D cap keeps each band's identity.
+        s = int(ring * 0.30)
+        patch = np.asarray(src.crop((int(cx - s), int(cy - s),
+                                     int(cx + s), int(cy + s))).convert('RGB'))
+        painted = tuple(int(v) for v in np.median(patch.reshape(-1, 3), axis=0))
+        # Solve for the albedo that RENDERS as the painted colour, then push the
+        # saturation past it a little: the panel art's caps are already muted by
+        # its own lighting, and reproducing that exactly reads as washed out.
+        cap = knob3d.albedo_for(painted, saturation=CAP_SATURATION)
 
-        fd = max(8, int(round(2 * rs * scale)))      # on-screen diameter
-        big = knob.resize((knob.size[0] * SS, knob.size[1] * SS), Image.LANCZOS)
-        light = lighting_field(big)
+        r_px = ring * knob3d.BODY_OVER_RING * scale
+        probe, off = knob3d.render_at(r_px, 0.0, cap)
+        fd = probe.size[0]
 
         strip = Image.new('RGBA', (fd, fd * steps), (0, 0, 0, 0))
         step = SWEEP / (steps - 1)
         for i in range(steps):
-            angle = -SWEEP / 2 + i * step            # frame 0 = min = -135 deg
-            frame = relit_frame(big, light, angle).resize((fd, fd), Image.LANCZOS)
+            angle = -SWEEP / 2 + i * step        # frame 0 = min = -135 deg
+            frame = probe if i == 0 and False else knob3d.render_at(r_px, angle, cap)[0]
             strip.paste(frame, (0, i * fd), frame)
         strip.save(os.path.join(OUT, f'knob_{name}.png'))
 
-        ox = int(round(cx * scale - fd / 2.0))
-        oy = int(round(cy * scale - fd / 2.0))
+        ox = int(round(cx * scale)) - off
+        oy = int(round(cy * scale)) - off
         layout['knobs'][name] = dict(origin=[ox, oy], size=[fd, fd],
                                      frames=steps, tag=tag)
         print(f'knob_{name}.png  {fd}x{fd} x{steps} frames  '
-              f'origin=({ox},{oy})  {tag}')
+              f'origin=({ox},{oy})  painted{painted} -> albedo{cap}  {tag}')
 
     for tag, (x0, y0, x1, y1) in METERS.items():
         ox, oy = int(round(x0 * scale)) + METER_INSET, int(round(y0 * scale))

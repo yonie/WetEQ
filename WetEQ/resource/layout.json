@@ -8,132 +8,132 @@
   "knobs": {
     "hf_gain": {
       "origin": [
-        295,
-        127
+        277,
+        112
       ],
       "size": [
-        55,
-        55
+        91,
+        91
       ],
       "frames": 9,
       "tag": "kHFGainParam"
     },
     "hf_freq": {
       "origin": [
-        424,
-        127
+        405,
+        111
       ],
       "size": [
-        55,
-        55
+        92,
+        92
       ],
       "frames": 9,
       "tag": "kHFFreqParam"
     },
     "hmf_gain": {
       "origin": [
-        294,
-        310
+        277,
+        295
       ],
       "size": [
-        56,
-        56
+        91,
+        91
       ],
       "frames": 9,
       "tag": "kHMFGainParam"
     },
     "hmf_freq": {
       "origin": [
-        422,
-        306
+        405,
+        287
       ],
       "size": [
-        60,
-        60
+        92,
+        92
       ],
       "frames": 9,
       "tag": "kHMFFreqParam"
     },
     "gain": {
       "origin": [
-        94,
-        431
+        69,
+        406
       ],
       "size": [
-        71,
-        71
+        125,
+        125
       ],
       "frames": 9,
       "tag": "kGainParam"
     },
     "lmf_gain": {
       "origin": [
-        292,
-        489
+        276,
+        477
       ],
       "size": [
-        60,
-        60
+        92,
+        92
       ],
       "frames": 9,
       "tag": "kLMFGainParam"
     },
     "lmf_freq": {
       "origin": [
-        421,
-        489
+        405,
+        477
       ],
       "size": [
-        60,
-        60
+        92,
+        92
       ],
       "frames": 9,
       "tag": "kLMFFreqParam"
     },
     "hpf": {
       "origin": [
-        42,
-        619
+        27,
+        604
       ],
       "size": [
-        60,
-        60
+        93,
+        93
       ],
       "frames": 9,
       "tag": "kHPFParam"
     },
     "lpf": {
       "origin": [
-        158,
-        619
+        141,
+        604
       ],
       "size": [
-        57,
-        57
+        93,
+        93
       ],
       "frames": 9,
       "tag": "kLPFParam"
     },
     "lf_gain": {
       "origin": [
-        292,
-        671
+        278,
+        651
       ],
       "size": [
-        60,
-        60
+        91,
+        91
       ],
       "frames": 9,
       "tag": "kLFGainParam"
     },
     "lf_freq": {
       "origin": [
-        422,
-        671
+        405,
+        651
       ],
       "size": [
-        60,
-        60
+        92,
+        92
       ],
       "frames": 9,
       "tag": "kLFFreqParam"
@@ -142,23 +142,23 @@
   "meters": {
     "kInputMeter": {
       "origin": [
-        80,
-        103
+        82,
+        107
       ],
       "size": [
-        30,
-        236
+        26,
+        228
       ],
       "segments": 12
     },
     "kOutputMeter": {
       "origin": [
-        165,
-        103
+        167,
+        107
       ],
       "size": [
-        30,
-        236
+        26,
+        228
       ],
       "segments": 12
     }
