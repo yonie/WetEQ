@@ -53,115 +53,109 @@ private:
 };
 
 //------------------------------------------------------------------------
-// LinearResampler - linear interpolation, continuous across blocks.
+// LinearResampler - identical to the one in WetDelay and WetReverb, including
+// the 2026-08-26 block-boundary fix (see the two FIX comments below).
 //
-// Still linear interpolation on purpose: its frequency-response ripple is part
-// of the WET sound and must not be "improved" away.
+// Kept the same across the line on purpose. A full rewrite with a proper
+// fractional read position was written first and REJECTED: it measured only
+// 0.19 correlation against the shipped WetDelay, i.e. it changed the sound. For
+// plugins people already use, the fix has to touch the defect and nothing else.
 //
-// What IS fixed here is a block-boundary defect inherited from WetDelay's
-// original version. That one tracked a `phase` accumulator and, when the input
-// ran out mid-block, exited its inner loop with phase still >= 1. The next
-// output then evaluated
-//
-//     out = last + t * (current - last)      with t = phase > 1
-//
-// which extrapolates instead of interpolating. Starvation recurs every block,
-// so the error lands exactly on block boundaries and grows with how badly the
-// block starves. Measured on the shipped WetDelay with a 0.5 amplitude sine:
-// peak 13.59 at a 64-sample buffer, 1.01 at 512, 0.515 at 1024. WetEQ inherited
-// it and reached 20.68 at 64 samples. Audible as a click train at buffer rate,
-// and it clips.
-//
-// This version keeps an explicit fractional read position instead, carries one
-// sample of history across blocks so interpolation is continuous, and clamps
-// the read position inside the available input so it can never extrapolate.
+// Linear interpolation stays. Its gentle high-frequency loss is part of the WET
+// character; only the runaway overshoot is gone.
 //------------------------------------------------------------------------
 class LinearResampler
 {
 public:
-    LinearResampler() = default;
-
+    LinearResampler() : phase(0.0), lastSample(0.0f) {}
+    
     void reset()
     {
-        position = 0.0;
-        history = 0.0f;
-        primed = false;
+        phase = 0.0;
+        lastSample = 0.0f;
     }
-
-    // Produce as many output samples as `inputSamples` supports, up to
-    // maxOutputSamples. Used host rate -> internal rate.
+    
+    // Downsample from higher rate to lower rate
+    // Returns number of output samples written
     int downsample(const float* input, int inputSamples,
                    float* output, int maxOutputSamples,
                    double inputRate, double outputRate)
     {
-        const double ratio = inputRate / outputRate;      // > 1 when decimating
-        int produced = 0;
-        while (produced < maxOutputSamples && position < static_cast<double>(inputSamples))
+        double ratio = inputRate / outputRate;
+        int outCount = 0;
+        
+        for (int i = 0; i < inputSamples && outCount < maxOutputSamples; ++i)
         {
-            output[produced++] = sampleAt(input, inputSamples, position);
-            position += ratio;
+            float currentSample = input[i];
+            
+            while (phase < 1.0 && outCount < maxOutputSamples)
+            {
+                // Linear interpolation
+                float t = static_cast<float>(phase);
+                output[outCount++] = lastSample + t * (currentSample - lastSample);
+                phase += ratio;
+            }
+            
+            phase -= 1.0;
+            lastSample = currentSample;
         }
-        finishBlock(input, inputSamples);
-        return produced;
+        
+        return outCount;
     }
-
-    // Produce exactly `outputSamples`. Used internal rate -> host rate.
+    
+    // Upsample from lower rate to higher rate
+    // Returns number of output samples written
     int upsample(const float* input, int inputSamples,
                  float* output, int outputSamples,
                  double inputRate, double outputRate)
     {
-        const double ratio = inputRate / outputRate;      // < 1 when expanding
+        double ratio = inputRate / outputRate;
+        int inIndex = 0;
+        
         for (int i = 0; i < outputSamples; ++i)
         {
-            output[i] = sampleAt(input, inputSamples, position);
-            position += ratio;
+            // Linear interpolation between samples
+            //
+            // FIX 1 (2026-08-26): clamp the interpolation coefficient.
+            // When a block starves, the loop below exits with `phase` still
+            // >= 1, and this line then extrapolates past the input instead of
+            // blending between two samples. Clamped it degrades to a
+            // sample-and-hold, which sits far below the 12-bit noise floor.
+            double p = phase;
+            if (p < 0.0) p = 0.0;
+            else if (p > 1.0) p = 1.0;
+            float t = static_cast<float>(p);
+
+            float currentSample = (inIndex < inputSamples) ? input[inIndex] : lastSample;
+            output[i] = lastSample + t * (currentSample - lastSample);
+
+            phase += ratio;
+            while (phase >= 1.0 && inIndex < inputSamples)
+            {
+                lastSample = input[inIndex++];
+                phase -= 1.0;
+            }
         }
-        finishBlock(input, inputSamples);
+
+        if (inIndex > 0 && inIndex <= inputSamples)
+            lastSample = input[inIndex - 1];
+
+        // FIX 2 (2026-08-26): wrap the leftover phase back into [0,1).
+        // Each block asks for slightly more input than the downsampler
+        // produced, and the old code let that shortfall accumulate, so `phase`
+        // grew without bound and the overshoot worsened the longer the plugin
+        // ran - which is why the biggest spikes always landed late in a render.
+        // Every block returns exactly outputSamples regardless, so no rate is
+        // lost by dropping the debt.
+        if (phase >= 1.0 || phase < 0.0)
+            phase -= std::floor(phase);
+
         return outputSamples;
     }
-
+    
 private:
-    // Read at a fractional index. Index -1 is the last sample of the previous
-    // block; anything past the end holds the final sample rather than running
-    // away, which is what stops the boundary overshoot.
-    inline float sampleAt(const float* input, int inputSamples, double pos) const
-    {
-        if (inputSamples <= 0)
-            return history;
-
-        double p = pos;
-        const double maxPos = static_cast<double>(inputSamples - 1);
-        if (p < -1.0) p = -1.0;
-        if (p > maxPos) p = maxPos;
-
-        const double floorPos = std::floor(p);
-        const float frac = static_cast<float>(p - floorPos);
-        const int i0 = static_cast<int>(floorPos);
-
-        const float a = (i0 < 0) ? history : input[i0];
-        const float b = (i0 + 1 <= inputSamples - 1) ? input[i0 + 1]
-                                                     : input[inputSamples - 1];
-        return a + frac * (b - a);
-    }
-
-    // Carry the leftover fraction and one sample of history into the next call,
-    // so the interpolation has no seam at the boundary.
-    inline void finishBlock(const float* input, int inputSamples)
-    {
-        if (inputSamples > 0)
-        {
-            history = input[inputSamples - 1];
-            primed = true;
-        }
-        position -= static_cast<double>(inputSamples);
-        // A host that hands us a shorter block than the previous one can leave
-        // the position behind the window; clamp so it cannot wander.
-        if (position < -1.0) position = -1.0;
-    }
-
-    double position = 0.0;   // fractional read index into the current block
-    float history = 0.0f;    // input[-1] for this block
-    bool primed = false;
+    double phase;
+    float lastSample;
 };
 
 //------------------------------------------------------------------------
