@@ -1,0 +1,166 @@
+{
+  "panel": {
+    "size": [
+      533,
+      800
+    ]
+  },
+  "knobs": {
+    "hf_gain": {
+      "origin": [
+        295,
+        127
+      ],
+      "size": [
+        55,
+        55
+      ],
+      "frames": 11,
+      "tag": "kHFGainParam"
+    },
+    "hf_freq": {
+      "origin": [
+        424,
+        127
+      ],
+      "size": [
+        55,
+        55
+      ],
+      "frames": 10,
+      "tag": "kHFFreqParam"
+    },
+    "hmf_gain": {
+      "origin": [
+        294,
+        310
+      ],
+      "size": [
+        56,
+        56
+      ],
+      "frames": 11,
+      "tag": "kHMFGainParam"
+    },
+    "hmf_freq": {
+      "origin": [
+        422,
+        306
+      ],
+      "size": [
+        60,
+        60
+      ],
+      "frames": 10,
+      "tag": "kHMFFreqParam"
+    },
+    "gain": {
+      "origin": [
+        94,
+        431
+      ],
+      "size": [
+        71,
+        71
+      ],
+      "frames": 11,
+      "tag": "kGainParam"
+    },
+    "lmf_gain": {
+      "origin": [
+        292,
+        489
+      ],
+      "size": [
+        60,
+        60
+      ],
+      "frames": 11,
+      "tag": "kLMFGainParam"
+    },
+    "lmf_freq": {
+      "origin": [
+        421,
+        489
+      ],
+      "size": [
+        60,
+        60
+      ],
+      "frames": 10,
+      "tag": "kLMFFreqParam"
+    },
+    "hpf": {
+      "origin": [
+        42,
+        619
+      ],
+      "size": [
+        60,
+        60
+      ],
+      "frames": 10,
+      "tag": "kHPFParam"
+    },
+    "lpf": {
+      "origin": [
+        158,
+        619
+      ],
+      "size": [
+        57,
+        57
+      ],
+      "frames": 10,
+      "tag": "kLPFParam"
+    },
+    "lf_gain": {
+      "origin": [
+        292,
+        671
+      ],
+      "size": [
+        60,
+        60
+      ],
+      "frames": 11,
+      "tag": "kLFGainParam"
+    },
+    "lf_freq": {
+      "origin": [
+        422,
+        671
+      ],
+      "size": [
+        60,
+        60
+      ],
+      "frames": 10,
+      "tag": "kLFFreqParam"
+    }
+  },
+  "meters": {
+    "kInputMeter": {
+      "origin": [
+        80,
+        103
+      ],
+      "size": [
+        30,
+        236
+      ],
+      "segments": 12
+    },
+    "kOutputMeter": {
+      "origin": [
+        165,
+        103
+      ],
+      "size": [
+        30,
+        236
+      ],
+      "segments": 12
+    }
+  }
+}
