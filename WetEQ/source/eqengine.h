@@ -37,19 +37,29 @@ namespace Yonie {
 //------------------------------------------------------------------------
 namespace EQRange {
 
-// dB knobs: 11 positions so 0 dB is reachable at the centre detent. A band you
-// cannot defeat is a defect rather than a constraint, and real SSL gain pots
-// have a centre detent at unity.
-constexpr int    kBandGainSteps = 11;
+// Every knob has NINE positions, because the panel art paints nine tick dots
+// around each one. Odd, so the centre detent is a real position: 0 dB on the
+// gain knobs, and unity is reachable. A band you cannot defeat is a defect
+// rather than a constraint, and real SSL gain pots have a centre detent.
+//
+// All three counts are deliberately the same number. If one ever diverges the
+// pointer stops landing on a painted dot, which is what happened when the
+// frequency knobs were 10 and the gain knobs 11.
+constexpr int    kSteps = 9;
+
+constexpr int    kBandGainSteps = kSteps;
 constexpr double kBandGainMin   = -15.0;
 constexpr double kBandGainMax   =  15.0;
 
-constexpr int    kMasterGainSteps = 11;
+constexpr int    kMasterGainSteps = kSteps;
 constexpr double kMasterGainMin   = -20.0;
 constexpr double kMasterGainMax   =  20.0;
 
-// Frequency knobs: 10 positions, log spaced. No centre value is needed.
-constexpr int    kFreqSteps = 10;
+// Frequency knobs: log spaced between the two values printed on the panel.
+// The endpoints are exact; the number printed at each knob's twelve o'clock is
+// the render's decoration and does NOT match the centre detent (LF centres on
+// 134 Hz, not the painted 150). Endpoints lead, the centre label is ignored.
+constexpr int    kFreqSteps = kSteps;
 
 constexpr double kHPFMin =    20.0, kHPFMax =  2000.0;
 constexpr double kLPFMin =  2000.0, kLPFMax = 20000.0;
@@ -90,13 +100,19 @@ public:
     // stepped encoder rather than a continuous pot.
     struct Settings
     {
-        int gain     = 5;   // 11 positions, 5 = 0 dB
-        int hpf      = 0;   // 10 positions, 0 = 20 Hz (effectively out)
-        int lpf      = 9;   // 10 positions, 9 = 20 kHz (effectively out)
-        int hfGain   = 5;   int hfFreq  = 5;
-        int hmfGain  = 5;   int hmfFreq = 5;
-        int lmfGain  = 5;   int lmfFreq = 5;
-        int lfGain   = 5;   int lfFreq  = 5;
+        // Derived from the step counts, never written as literals: a fresh
+        // insert must be audibly neutral, so every band sits at its centre
+        // detent (0 dB) and both filters are parked out of circuit.
+        static constexpr int kCentreGain = EQRange::kBandGainSteps / 2;
+        static constexpr int kCentreFreq = EQRange::kFreqSteps / 2;
+
+        int gain     = EQRange::kMasterGainSteps / 2;   // 0 dB
+        int hpf      = 0;                               // 20 Hz, out of circuit
+        int lpf      = EQRange::kFreqSteps - 1;         // 20 kHz, out of circuit
+        int hfGain   = kCentreGain;   int hfFreq  = kCentreFreq;
+        int hmfGain  = kCentreGain;   int hmfFreq = kCentreFreq;
+        int lmfGain  = kCentreGain;   int lmfFreq = kCentreFreq;
+        int lfGain   = kCentreGain;   int lfFreq  = kCentreFreq;
 
         bool operator==(const Settings& o) const
         {

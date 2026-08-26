@@ -28,6 +28,12 @@ void LEDMeterView::draw(CDrawContext* context)
     if (litCount > numSegments) litCount = numSegments;
     if (litCount < 0) litCount = 0;
     
+    // Black the whole window out first. The backplate has all 12 LEDs painted
+    // lit, and the drawn segments do not line up with the painted ones, so
+    // anything left uncovered shows through as a bright sliver.
+    context->setFillColor(windowBlack);
+    context->drawRect(getViewSize(), kDrawFilled);
+
     // Draw each segment
     for (int i = 0; i < numSegments; i++)
     {

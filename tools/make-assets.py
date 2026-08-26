@@ -12,12 +12,21 @@ Each filmstrip gets exactly ONE FRAME PER DETENT. The controls are stepped, so
 frame index == step index and every pointer angle is precisely right. A generic
 31-frame strip would land most detents between frames.
 
+Rotation is RELIT, not plain. Turning the whole crop drags the panel's lighting
+round with the knob, so the specular highlight ends up on the underside at the
+extremes and the knob reads as a sticker rather than a control. A real knob's
+pointer slot, bevel and knurling do rotate; the lamp above the console does not.
+So each frame is rotated in full and then divided by the lighting it carried
+over and multiplied by the lighting of the un-rotated knob, which puts the
+highlight back at the top while leaving every rotating detail alone.
+
     python tools/make-assets.py
 """
 import json
 import os
 
-from PIL import Image, ImageDraw
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -28,8 +37,15 @@ TARGET_H = 800          # keep the editor small enough for older machines
 SWEEP = 270.0           # pointer travel, min to max
 SS = 4                  # supersample for rotation
 
-GAIN_STEPS = 11         # dB knobs: odd, so 0 dB sits at the centre detent
-FREQ_STEPS = 10         # frequency knobs: no centre value needed
+# NINE detents on every knob, because the art paints nine tick dots around each
+# one. Odd, so the centre detent is a real position (0 dB on the gain knobs).
+# Must stay in step with EQRange::kSteps in source/eqengine.h.
+STEPS = 9
+GAIN_STEPS = STEPS
+FREQ_STEPS = STEPS
+
+LIGHT_BLUR = 0.18       # lighting field = luminance blurred by this x diameter
+LIGHT_CLIP = (0.55, 1.85)   # bound the correction so dark knobs cannot blow up
 
 # name, centre x, centre y, radius (measured on the 1024x1536 original),
 # control tag, step count
@@ -70,6 +86,28 @@ METERS = {
 METER_SEGMENTS = 12
 
 
+def lighting_field(knob, blur_frac=LIGHT_BLUR):
+    """The lamp, not the detail: low-frequency luminance of the knob."""
+    radius = max(2.0, knob.size[0] * blur_frac)
+    return knob.convert('L').filter(ImageFilter.GaussianBlur(radius))
+
+
+def relit_frame(knob, light, angle):
+    """Rotate the knob by angle, then put the static lighting back."""
+    centre = ((knob.size[0] - 1) / 2.0,) * 2
+    rot = knob.rotate(-angle, resample=Image.BICUBIC, center=centre)
+    lrot = light.rotate(-angle, resample=Image.BICUBIC, center=centre)
+
+    static = np.asarray(light).astype(float)
+    carried = np.asarray(lrot).astype(float)
+    # +10 keeps the ratio finite where the knob is nearly black (the LF pair)
+    ratio = np.clip((static + 10.0) / (carried + 10.0), *LIGHT_CLIP)[..., None]
+
+    px = np.asarray(rot).astype(float)
+    px[..., :3] = np.clip(px[..., :3] * ratio, 0, 255)
+    return Image.fromarray(px.astype('uint8'), 'RGBA')
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
 
@@ -79,6 +117,18 @@ def main():
     scale = TARGET_H / sh
 
     panel = src.resize((tw, TARGET_H), Image.LANCZOS)
+
+    # Black the LED windows out in the art itself. LEDMeterView also fills its
+    # own rect before drawing, but that only helps where the two agree to the
+    # pixel; one row of painted LED peeking past the view's top edge reads as a
+    # meter stuck at full scale. Belt and braces: nothing colourful is left
+    # underneath. The 2 px inset keeps the painted recess bevel intact.
+    art = ImageDraw.Draw(panel)
+    for (x0, y0, x1, y1) in METERS.values():
+        art.rectangle([round(x0 * scale) + 2, round(y0 * scale) + 2,
+                       round(x1 * scale) - 2, round(y1 * scale) - 2],
+                      fill=(0, 0, 0))
+
     panel.save(os.path.join(OUT, 'backplate.png'))
     print(f'backplate.png  {sw}x{sh} -> {tw}x{TARGET_H}  (scale {scale:.5f})')
 
@@ -93,15 +143,14 @@ def main():
 
         fd = max(8, int(round(2 * rs * scale)))      # on-screen diameter
         big = knob.resize((knob.size[0] * SS, knob.size[1] * SS), Image.LANCZOS)
+        light = lighting_field(big)
 
         strip = Image.new('RGBA', (fd, fd * steps), (0, 0, 0, 0))
         step = SWEEP / (steps - 1)
         for i in range(steps):
             angle = -SWEEP / 2 + i * step            # frame 0 = min = -135 deg
-            rot = big.rotate(-angle, resample=Image.BICUBIC,
-                             center=(big.size[0] / 2, big.size[1] / 2))
-            strip.paste(rot.resize((fd, fd), Image.LANCZOS), (0, i * fd),
-                        rot.resize((fd, fd), Image.LANCZOS))
+            frame = relit_frame(big, light, angle).resize((fd, fd), Image.LANCZOS)
+            strip.paste(frame, (0, i * fd), frame)
         strip.save(os.path.join(OUT, f'knob_{name}.png'))
 
         ox = int(round(cx * scale - fd / 2.0))

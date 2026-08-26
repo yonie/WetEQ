@@ -150,19 +150,19 @@ tresult PLUGIN_API WetEQController::initialize(FUnknown* context)
     // filters out of circuit, so a freshly inserted WetEQ does nothing but add
     // its own character.
     addSteppedGain(kGainParam, u"Gain", kMasterGainSteps,
-                   kMasterGainMin, kMasterGainMax, 5);
+                   kMasterGainMin, kMasterGainMax, kMasterGainSteps / 2);
 
     addSteppedFreq(kHPFParam, u"HPF", kFreqSteps, kHPFMin, kHPFMax, 0);
     addSteppedFreq(kLPFParam, u"LPF", kFreqSteps, kLPFMin, kLPFMax, kFreqSteps - 1);
 
-    addSteppedGain(kHFGainParam, u"HF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, 5);
-    addSteppedFreq(kHFFreqParam, u"HF Freq", kFreqSteps, kHFMin, kHFMax, 5);
-    addSteppedGain(kHMFGainParam, u"HMF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, 5);
-    addSteppedFreq(kHMFFreqParam, u"HMF Freq", kFreqSteps, kHMFMin, kHMFMax, 5);
-    addSteppedGain(kLMFGainParam, u"LMF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, 5);
-    addSteppedFreq(kLMFFreqParam, u"LMF Freq", kFreqSteps, kLMFMin, kLMFMax, 5);
-    addSteppedGain(kLFGainParam, u"LF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, 5);
-    addSteppedFreq(kLFFreqParam, u"LF Freq", kFreqSteps, kLFMin, kLFMax, 5);
+    addSteppedGain(kHFGainParam, u"HF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, kBandGainSteps / 2);
+    addSteppedFreq(kHFFreqParam, u"HF Freq", kFreqSteps, kHFMin, kHFMax, kFreqSteps / 2);
+    addSteppedGain(kHMFGainParam, u"HMF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, kBandGainSteps / 2);
+    addSteppedFreq(kHMFFreqParam, u"HMF Freq", kFreqSteps, kHMFMin, kHMFMax, kFreqSteps / 2);
+    addSteppedGain(kLMFGainParam, u"LMF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, kBandGainSteps / 2);
+    addSteppedFreq(kLMFFreqParam, u"LMF Freq", kFreqSteps, kLMFMin, kLMFMax, kFreqSteps / 2);
+    addSteppedGain(kLFGainParam, u"LF Gain", kBandGainSteps, kBandGainMin, kBandGainMax, kBandGainSteps / 2);
+    addSteppedFreq(kLFFreqParam, u"LF Freq", kFreqSteps, kLFMin, kLFMax, kFreqSteps / 2);
 
     // Meter feeds. Read-only so a host never tries to automate them.
     parameters.addParameter(STR16("Input Meter"), nullptr, 0, 0,

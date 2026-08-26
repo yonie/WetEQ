@@ -42,6 +42,12 @@ protected:
     
     // Color definitions for 80's LED look
     // Green zone (segments 0-7)
+    // The panel art paints every LED lit, so the meter must black its own
+    // window out before drawing. Without this the painted LEDs show through
+    // the gaps between segments as bright slivers and the meter reads as
+    // permanently pinned.
+    VSTGUI::CColor windowBlack{0, 0, 0, 255};
+
     VSTGUI::CColor greenLit{0, 255, 0, 255};
     VSTGUI::CColor greenDark{10, 42, 10, 255};
     
