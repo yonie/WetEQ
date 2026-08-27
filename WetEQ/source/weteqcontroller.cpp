@@ -218,7 +218,19 @@ tresult PLUGIN_API WetEQController::setComponentState(IBStream* state)
 IPlugView* PLUGIN_API WetEQController::createView(FIDString name)
 {
     if (FIDStringsEqual(name, Vst::ViewType::kEditor))
-        return new VSTGUI::VST3Editor(this, "view", "weteqeditor.uidesc");
+    {
+        auto* editor = new VSTGUI::VST3Editor(this, "view", "weteqeditor.uidesc");
+
+        // Discrete zoom steps rather than a draggable window. VSTGUI puts these
+        // in the editor's context menu and handles the resize itself.
+        //
+        // Discrete on purpose: the panel is a fixed layout, so a free resize
+        // buys nothing a step does not, and fixed steps are the only way to
+        // ship bitmaps that match the scale being drawn. 533x800 at 100% is
+        // small on a 4K display, which is the actual complaint.
+        editor->setAllowedZoomFactors({0.75, 1.0, 1.25, 1.5, 2.0});
+        return editor;
+    }
     return nullptr;
 }
 
