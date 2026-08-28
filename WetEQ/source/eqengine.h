@@ -166,6 +166,33 @@ private:
 
     void updateCoefficients();
 
+    // Every knob is stepped, so a change is a JUMP, and a jump is a click.
+    // Two of them: the master drive is a scalar that leaps by up to a factor of
+    // 1.78 in one detent, and the biquad coefficients get swapped while the
+    // filter state still holds the old response.
+    //
+    // Both are glided rather than switched. The controls stay stepped - what
+    // moves smoothly is the value behind the detent, over a few milliseconds,
+    // which is short enough that the change still feels instant and long enough
+    // that nothing steps.
+    struct Resolved
+    {
+        double gainDb = 0.0;
+        double hpHz = 0.0, lpHz = 0.0;
+        double lfG = 0.0, lfF = 0.0, lmfG = 0.0, lmfF = 0.0;
+        double hmfG = 0.0, hmfF = 0.0, hfG = 0.0, hfF = 0.0;
+    };
+    Resolved resolve(const Settings& s) const;
+    bool glideToward(Resolved& v, const Resolved& target, double a) const;
+
+    static constexpr double kGlideMs = 22.0;   // parameter glide
+    static constexpr double kDriveMs = 12.0;   // master drive, per sample
+
+    Resolved smooth;            // what the filters are actually built from
+    bool smoothPrimed = false;  // first prepare() snaps instead of gliding
+    float driveCurrent = 1.0f;  // per-sample smoothed master drive
+    int lastBlock = 512;        // block just handed to us, for the glide rate
+
     Settings current;
     double hostRate = 44100.0;
     bool coeffsDirty = true;

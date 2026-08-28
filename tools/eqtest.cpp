@@ -130,12 +130,17 @@ int main()
         s.lfFreq = EQRange::kFreqSteps - 1; eng.setSettings(s);
         std::printf("%.1f Hz (panel 600)\n", eng.lfHz());
 
+        // Positions derived from the step count, not written as 0/5/10. Those
+        // literals were right for eleven steps and silently wrong after the move
+        // to nine: the test then called +5 dB the centre, and failed.
+        const int gTop = EQRange::kMasterGainSteps - 1;
+        const int gCtr = EQRange::kMasterGainSteps / 2;
         s = EQEngine::Settings{};
-        s.gain = 0;  eng.setSettings(s); const double gLo = eng.gainDb();
-        s.gain = 5;  eng.setSettings(s); const double gMid = eng.gainDb();
-        s.gain = 10; eng.setSettings(s); const double gHi = eng.gainDb();
-        std::printf("  GAIN %.1f / %.1f / %.1f dB at positions 0/5/10 "
-                    "(panel -20 / 0 / +20)\n", gLo, gMid, gHi);
+        s.gain = 0;    eng.setSettings(s); const double gLo = eng.gainDb();
+        s.gain = gCtr; eng.setSettings(s); const double gMid = eng.gainDb();
+        s.gain = gTop; eng.setSettings(s); const double gHi = eng.gainDb();
+        std::printf("  GAIN %.1f / %.1f / %.1f dB at positions 0/%d/%d "
+                    "(panel -20 / 0 / +20)\n", gLo, gMid, gHi, gCtr, gTop);
         check("GAIN centre position is exactly 0 dB", gMid, 0.0, 0.001);
     }
 
@@ -243,6 +248,65 @@ int main()
     }
 
     eng.setQuantizationEnabled(true);
+
+    // --- changing a setting must not click --------------------------------
+    //
+    // Ronald heard "a very tiny pop/click" on every knob move. Two hard
+    // discontinuities can cause it: the master drive is recomputed once per
+    // block and jumps outright (a detent is 5 dB, a factor of 1.78), and the
+    // biquad coefficients are swapped while the filter state carries over from
+    // the old response.
+    //
+    // Measured as the largest sample-to-sample step around the change against
+    // the largest step the steady tone itself makes. Clean switching stays near
+    // 1.0; a click shows up as a multiple of it.
+    {
+        std::printf("\n[6] changing a setting must not click\n");
+
+        auto clickRatio = [](const EQEngine::Settings& a, const EQEngine::Settings& b) {
+            EQEngine e;
+            e.prepare(kRate, kBlock);
+            e.setSettings(a);
+            const int blocks = 40, half = blocks / 2;
+            std::vector<float> inL(kBlock), inR(kBlock), oL(kBlock), oR(kBlock), out;
+            out.reserve(static_cast<size_t>(blocks) * kBlock);
+            double ph = 0.0;
+            const double dp = 2.0 * kPI * 1000.0 / kRate;
+            for (int blk = 0; blk < blocks; ++blk)
+            {
+                if (blk == half) e.setSettings(b);
+                for (int i = 0; i < kBlock; ++i)
+                {
+                    inL[i] = inR[i] = static_cast<float>(0.35 * std::sin(ph));
+                    ph += dp;
+                }
+                e.processStereo(inL.data(), inR.data(), oL.data(), oR.data(), kBlock);
+                for (int i = 0; i < kBlock; ++i) out.push_back(oL[i]);
+            }
+            auto maxStep = [&out](int from, int to) {
+                double m = 0.0;
+                for (int i = from + 1; i < to; ++i)
+                    m = std::max(m, std::abs(double(out[i]) - double(out[i - 1])));
+                return m;
+            };
+            const int sw = half * kBlock;
+            const double steady = maxStep(kBlock * 8, kBlock * 15);
+            const double atSwitch = maxStep(sw - 8, sw + 2 * kBlock);
+            return steady > 0.0 ? atSwitch / steady : 0.0;
+        };
+
+        auto one = [&](const char* what, const EQEngine::Settings& b, double tol) {
+            const double r = clickRatio(EQEngine::Settings{}, b);
+            const bool ok = r <= tol;
+            if (!ok) ++failures;
+            std::printf("  %-46s %6.2fx (want <=%.2f)  %s\n",
+                        what, r, tol, ok ? "ok" : "FAIL");
+        };
+
+        EQEngine::Settings g;   g.gain    += 1;  one("master GAIN, one detent",  g,  1.30);
+        EQEngine::Settings hf;  hf.hfGain += 2;  one("HF gain, two detents",     hf, 1.30);
+        EQEngine::Settings hp;  hp.hpf     = 4;  one("HPF stepped into circuit", hp, 1.30);
+    }
 
     // --- the house lo-fi character ---------------------------------------
     std::printf("\n[5] house character: 12-bit floor and the Nyquist consequence\n");
