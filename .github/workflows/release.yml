@@ -193,12 +193,12 @@ jobs:
           body: |
             **WetEQ 1.0.0 — first release**
 
-            A four-band console equaliser with stepped controls. Nine positions
-            per knob, no Q control, no menus.
+            A four-band console equaliser with stepped controls: nine positions
+            per knob, and no Q control.
 
-            Flat is flat: plus or minus 0.1 dB from 20 Hz to 20 kHz with every
-            control out of circuit. GAIN drives the input amplifier rather than
-            trimming the output, so it colours as you push it.
+            With every control out of circuit the response is within plus or
+            minus 0.1 dB from 20 Hz to 20 kHz. GAIN drives the input amplifier
+            rather than trimming the output, so it colours as you push it.
 
             Windows, macOS (Intel and Apple Silicon) and Linux in one download.
             Free, MIT licensed, no copy protection.
