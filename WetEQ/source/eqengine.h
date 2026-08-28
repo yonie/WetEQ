@@ -29,6 +29,7 @@
 #pragma once
 
 #include "wetcore.h"
+#include "analogcore.h"
 
 namespace Yonie {
 
@@ -154,30 +155,56 @@ public:
     // measured curve can be compared against the intended filter response.
     void setQuantizationEnabled(bool on) { quantize = on; }
     void setCrosstalkEnabled(bool on)    { crosstalk = on; }
+    void setSaturationEnabled(bool on)   { saturate = on; }
+    void setHissEnabled(bool on)         { hiss = on; }
+    void setToleranceEnabled(bool on);
 
 private:
     // SSL-style proportional Q: the bell tightens as it is pushed harder, so a
     // small boost is broad and musical and a large one is surgical. No Q knob.
+    // Q is not chosen here. It falls out of the circuit.
+    //
+    // A console bell is a gyrator tank - an op-amp faking an inductor - sitting
+    // on the wiper of the boost/cut pot. The wiper sets how much of the tank is
+    // in circuit AND the resistance in series with it, and that series
+    // resistance is what damps the tank. Near the centre there is a lot of it,
+    // so the tank is heavily damped and the curve is wide. Towards the ends it
+    // collapses and the curve narrows. Proportional Q is a CONSEQUENCE of that
+    // topology, which is why real desks all have it and no digital EQ does
+    // unless someone puts it there by hand.
+    //
+    // Rp is the pot, R_end the wiper and end-stop resistance a real pot cannot
+    // go below, Z0 the tank's characteristic impedance sqrt(L/Cs). Widening
+    // R_end is how a designer keeps a desk from ringing at full boost, and it
+    // is the honest place to tune the feel - a component value, not a fudge on
+    // the output of a formula.
+    static constexpr double kPotOhms   = 10000.0;
+    static constexpr double kEndOhms   = 3600.0;   // wiper + end stop + op-amp Zout
+    static constexpr double kTankZ0    = 2600.0;   // sqrt(L/Cs)
+    static constexpr double kTankLoss  = 90.0;     // series loss in the tank itself
+
     static double proportionalQ(double gainDb)
     {
-        // BROAD, and the proportional part is deliberately gentle. The textbook
-        // SSL range is 0.70..2.00; that was audibly resonant at full boost here
-        // and too surgical at small moves to draw a smooth curve with. Tuned by
-        // ear in three passes down to 0.32..0.47 - about 3.3 octaves at a gentle
-        // move and still 2.7 at full.
-        //
-        // The narrowing with gain is now slight on purpose. An EQ with nine
-        // fixed detents and no Q control is for shaping a sound, not correcting
-        // one, and a bell that tightens hard under boost fights that: it starts
-        // resonating exactly when you ask it for the most.
-        //
-        // Still proportional - a harder push is still the narrower bell - just
-        // across a narrow spread of very wide curves.
-        const double mag = std::abs(gainDb) / 15.0;      // 0..1
-        return 0.32 + 0.15 * mag;                        // 0.32..0.47
+        const double d = 0.5 * std::abs(gainDb) / 15.0;      // wiper travel, 0..0.5
+        const double Rs = kPotOhms * (0.5 - d) + kTankLoss + kEndOhms;
+        return kTankZ0 / Rs;
     }
 
     void updateCoefficients();
+
+    // Op-amp soft clipping. A 5534-class part does not hard-limit, it runs out
+    // of loop gain and compresses, mostly odd harmonics. tanh is the standard
+    // stand-in and is well behaved: unity slope at zero, so quiet signal is
+    // untouched, and monotonic, so it cannot fold.
+    //
+    // kHeadroom sets where it starts to bite. GAIN is calibrated so that centre
+    // detent leaves the stage clean and the top of its travel is audibly into
+    // the knee - which is the whole reason the knob is called DRIVE.
+    static float opAmp(float x)
+    {
+        constexpr float kHeadroom = 1.9f;
+        return kHeadroom * std::tanh(x / kHeadroom);
+    }
 
     // Every knob is stepped, so a change is a JUMP, and a jump is a click.
     // Two of them: the master drive is a scalar that leaps by up to a factor of
@@ -199,6 +226,7 @@ private:
     bool glideToward(Resolved& v, const Resolved& target, double a) const;
 
     static constexpr double kGlideMs = 22.0;   // parameter glide
+    static constexpr int    kGlideChunk = 32;  // samples between coefficient updates
     static constexpr double kDriveMs = 12.0;   // master drive, per sample
 
     Resolved smooth;            // what the filters are actually built from
@@ -211,10 +239,14 @@ private:
     bool coeffsDirty = true;
 
     // per channel
+    // Six independent circuit stages per channel. Each has its own op-amp, its
+    // own noise and its own crosstalk into the other channel - a console is
+    // many small circuits, not one big filter.
     struct Chain
     {
-        Biquad hpf, lpf, lf, lmf, hmf, hf;
-        void reset() { hpf.reset(); lpf.reset(); lf.reset(); lmf.reset(); hmf.reset(); hf.reset(); }
+        AnalogStage hpf, lpf, lf, lmf, hmf, hf;
+        AnalogStage* all[6] = { &hpf, &lpf, &lf, &lmf, &hmf, &hf };
+        void reset() { for (auto* s : all) s->reset(); }
     };
     Chain chainL, chainR;
 
@@ -234,6 +266,40 @@ private:
 
     static constexpr double kAntiAliasFreq = 10000.0;
     static constexpr float  kCrosstalkAmount = 0.01f;   // -40 dB, as WetDelay
+
+    // Analog hiss. -88 dBFS, which is a quiet console channel; the first pass
+    // sat at -100 and read as suspiciously clean, because that is converter
+    // territory rather than op-amp territory.
+    //
+    // It is also TILTED, not flat. Op-amp and resistor noise carries a 1/f
+    // component, so analog hiss is warmer than the white noise a dither
+    // generator makes - mixing in a low-passed copy gets most of the way there
+    // for the price of one filter. Flat white noise is a tell.
+    static constexpr float  kHissAmp = 7.0e-5f;
+
+    // Per-stage crosstalk and noise. The totals are unchanged - about -40 dB of
+    // bleed and -91 dBFS of hiss - but they are injected at every stage rather
+    // than once at the input. On a desk adjacent channels leak the whole way
+    // down the strip, so the bleed a band sees has already been through the
+    // bands before it, and every stage's own resistors contribute their own
+    // uncorrelated noise. Six small independent sources sound like a console;
+    // one at the output sounds like a converter.
+    static constexpr float  kStageBleed = 0.0041f;   // 6 stages -> about -40 dB
+    static constexpr float  kStageHiss  = 2.9e-5f;   // 6 uncorrelated -> -91 dBFS
+    static constexpr float  kHeadroom   = 2.6f;      // where each op-amp bites
+    static constexpr double kHissTiltHz = 1800.0;   // corner of the warm half
+    OnePoleFilter hissTiltL, hissTiltR;
+
+    // Component tolerance. Real resistors and capacitors are +/-5%, so the two
+    // channels of a console are never the same channel twice and every corner
+    // frequency sits slightly off its nominal value. This is a real part of why
+    // analog reads as wide, and it is nearly free to model.
+    static constexpr double kTolerance = 0.025;   // +/-2.5% per channel
+    double tolL[6] = {1,1,1,1,1,1};
+    double tolR[6] = {1,1,1,1,1,1};
+
+    bool saturate = true;
+    bool hiss = true;
     static constexpr float  kQuantGain = 2.0f;          // companding
     static constexpr float  kBitDepthLevels = 4096.0f;  // 2^12
 };

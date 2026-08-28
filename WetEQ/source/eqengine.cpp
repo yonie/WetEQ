@@ -23,6 +23,28 @@ void EQEngine::prepare(double hostSampleRate, int maxBlockSize)
 
     // Snap rather than glide on prepare: the glide exists to hide a knob move,
     // not to fade the plugin in every time the host starts.
+    // Draw this unit's component tolerances once. A given build of the plugin
+    // is a given build of the console: the values do not wander while you use
+    // it, they were soldered in at the factory.
+    {
+        std::mt19937 tol(0xC0FFEE);
+        std::uniform_real_distribution<double> spread(-kTolerance, kTolerance);
+        for (int i = 0; i < 6; ++i)
+        {
+            tolL[i] = 1.0 + spread(tol);
+            tolR[i] = 1.0 + spread(tol);
+        }
+    }
+
+    // A different seed per stage per channel, so the twelve noise sources are
+    // uncorrelated. Sharing one generator makes the whole strip hiss in unison,
+    // which reads as a single added noise rather than as a floor.
+    {
+        uint32_t sd = 0x5EED0001u;
+        for (int i = 0; i < 6; ++i) chainL.all[i]->setNoiseSeed(sd += 0x9E3779B9u);
+        for (int i = 0; i < 6; ++i) chainR.all[i]->setNoiseSeed(sd += 0x9E3779B9u);
+    }
+
     smooth = resolve(current);
     smoothPrimed = true;
     driveCurrent = static_cast<float>(std::pow(10.0, smooth.gainDb / 20.0));
@@ -40,6 +62,8 @@ void EQEngine::prepare(double hostSampleRate, int maxBlockSize)
     // Anti-alias before the 24 kHz downsample and reconstruct after the
     // upsample. Same one-pole at 10 kHz as WetDelay, deliberately - this chain
     // and its ripple are the house sound, not something to improve.
+    hissTiltL.setCoefficients(hostRate, kHissTiltHz, OnePoleFilter::Type::LowPass);
+    hissTiltR.setCoefficients(hostRate, kHissTiltHz, OnePoleFilter::Type::LowPass);
     antiAliasL.setCoefficients(hostRate, kAntiAliasFreq, OnePoleFilter::Type::LowPass);
     antiAliasR.setCoefficients(hostRate, kAntiAliasFreq, OnePoleFilter::Type::LowPass);
     reconstructL.setCoefficients(hostRate, kAntiAliasFreq, OnePoleFilter::Type::LowPass);
@@ -137,27 +161,24 @@ void EQEngine::updateCoefficients()
             return;
     }
 
-    const double sr = kInternalRate;
+    // Host rate. The EQ is analog; there is no internal rate any more.
+    const double sr = hostRate;
 
-    // A high-pass parked at its lowest position and a low-pass at its highest
-    // should be out of circuit, not a gentle tilt across the whole band. Judged
-    // on the TARGET, not the glide: a filter on its way in should not flick
-    // between bypassed and active as it travels.
     const bool hpActive = current.hpf > 0;
     const bool lpActive = current.lpf < (EQRange::kFreqSteps - 1);
 
-    for (Chain* c : { &chainL, &chainR })
+    using M = AnalogStage::Mode;
+    for (int ch = 0; ch < 2; ++ch)
     {
-        if (hpActive) c->hpf.setHighPass(sr, smooth.hpHz);
-        else          c->hpf.setBypass();
+        Chain* c = ch == 0 ? &chainL : &chainR;
+        const double* t = ch == 0 ? tolL : tolR;
 
-        if (lpActive) c->lpf.setLowPass(sr, smooth.lpHz);
-        else          c->lpf.setBypass();
-
-        c->lf.setLowShelf(sr, smooth.lfF, smooth.lfG);
-        c->lmf.setPeaking(sr, smooth.lmfF, smooth.lmfG, proportionalQ(smooth.lmfG));
-        c->hmf.setPeaking(sr, smooth.hmfF, smooth.hmfG, proportionalQ(smooth.hmfG));
-        c->hf.setHighShelf(sr, smooth.hfF, smooth.hfG);
+        c->hpf.set(hpActive ? M::HighPass : M::Bypass, sr, smooth.hpHz * t[0], 0.0, 0.707);
+        c->lpf.set(lpActive ? M::LowPass  : M::Bypass, sr, smooth.lpHz * t[1], 0.0, 0.707);
+        c->lf .set(M::LowShelf,  sr, smooth.lfF  * t[2], smooth.lfG,  0.707);
+        c->lmf.set(M::Bell,      sr, smooth.lmfF * t[3], smooth.lmfG, proportionalQ(smooth.lmfG));
+        c->hmf.set(M::Bell,      sr, smooth.hmfF * t[4], smooth.hmfG, proportionalQ(smooth.hmfG));
+        c->hf .set(M::HighShelf, sr, smooth.hfF  * t[5], smooth.hfG,  0.707);
     }
 
     coeffsDirty = false;
@@ -177,96 +198,82 @@ void EQEngine::processStereo(const float* inL, const float* inR,
         prepare(hostRate, numSamples);
     }
 
-    lastBlock = numSamples;
-    updateCoefficients();
+    // Coefficients are glided in SUB-BLOCKS, not once per buffer.
+    //
+    // With the resampler gone there is nothing downstream to smooth a
+    // coefficient step, so a 512-sample buffer meant the filter jumped once
+    // every 11 ms and the click came straight back - measured at 2.28x on an
+    // HF move. Updating every 32 samples cuts each step by a factor of 16 and
+    // costs a coefficient recalculation per 0.7 ms, which is nothing next to
+    // the six biquads it feeds.
 
-    // --- input drive, then anti-alias, at host rate ----------------------
-    // GAIN is here on purpose: before the 24 kHz / 12-bit stage, so it sets
-    // where the signal sits against the quantisation floor. It is not makeup
-    // gain and is not undone at the output.
-    // Smoothed PER SAMPLE, not per block. A detent is 5 dB - a factor of 1.78 -
-    // and applying that as a step at a block boundary is an audible click no
-    // matter how short the block. A one-pole here costs one multiply-add per
-    // sample and removes it outright.
-    const float driveTarget = static_cast<float>(std::pow(10.0, smooth.gainDb / 20.0));
+    // --- ANALOG PATH, at host rate ---------------------------------------
+    //
+    // There is no downsample, no quantiser and no reconstruction filter here
+    // any more. A console EQ is op-amps, resistors and capacitors: it has no
+    // sample rate and no word length, so modelling one with sampler artefacts
+    // put a digital fingerprint on a device that never had one. That core is
+    // authentic on WetDelay and WetReverb, which model DIGITAL units. It was
+    // never right here, and it cost 3 dB at 4 kHz and 10.7 dB at 8 kHz on a
+    // signal that had not been touched.
+    //
+    // What replaces it is circuit behaviour: op-amp saturation on the drive
+    // stage, component tolerance so the two channels are genuinely not
+    // identical, and a broadband noise floor instead of a quantiser floor.
+
     const float driveA =
         static_cast<float>(1.0 - std::exp(-1.0 / (kDriveMs * 0.001 * hostRate)));
-    for (int i = 0; i < numSamples; ++i)
+
+    for (int base = 0; base < numSamples; base += kGlideChunk)
     {
+    const int chunk = std::min(kGlideChunk, numSamples - base);
+    lastBlock = chunk;
+    updateCoefficients();
+    const float driveTarget = static_cast<float>(std::pow(10.0, smooth.gainDb / 20.0));
+
+    for (int j = 0; j < chunk; ++j)
+    {
+        const int i = base + j;
         driveCurrent += (driveTarget - driveCurrent) * driveA;
-        preL[i] = antiAliasL.process(inL[i] * driveCurrent);
-        preR[i] = antiAliasR.process(inR[i] * driveCurrent);
-    }
 
-    // --- down to 24 kHz --------------------------------------------------
-    int want = static_cast<int>(numSamples * kInternalRate / hostRate) + 1;
-    want = std::min(want, static_cast<int>(downBufL.size()));
+        float l = inL[i] * driveCurrent;
+        float r = inR[i] * driveCurrent;
 
-    const int gotL = downL.downsample(preL.data(), numSamples, downBufL.data(),
-                                      want, hostRate, kInternalRate);
-    const int gotR = downR.downsample(preR.data(), numSamples, downBufR.data(),
-                                      want, hostRate, kInternalRate);
-    const int n = std::min(gotL, gotR);
-
-    // --- the lo-fi EQ path ----------------------------------------------
-    for (int i = 0; i < n; ++i)
-    {
-        float l = downBufL[i];
-        float r = downBufR[i];
-
-        // Console channel bleed, -40 dB, same as WetDelay. On an insert this
-        // narrows the stereo image very slightly; that was a deliberate call.
-        if (crosstalk)
+        // Input amplifier. The first op-amp in the strip, before the EQ, which
+        // is where GAIN drives.
+        if (saturate)
         {
-            const float bl = l + kCrosstalkAmount * r;
-            const float br = r + kCrosstalkAmount * l;
-            l = bl;
-            r = br;
+            l = opAmpCurve(l, kHeadroom);
+            r = opAmpCurve(r, kHeadroom);
         }
 
-        l = chainL.hpf.process(l);
-        r = chainR.hpf.process(r);
-        l = chainL.lpf.process(l);
-        r = chainR.lpf.process(r);
-        l = chainL.lf.process(l);
-        r = chainR.lf.process(r);
-        l = chainL.lmf.process(l);
-        r = chainR.lmf.process(r);
-        l = chainL.hmf.process(l);
-        r = chainR.hmf.process(r);
-        l = chainL.hf.process(l);
-        r = chainR.hf.process(r);
-
-        if (quantize)
+        // Six stages, in strip order. Each one takes a little of the OTHER
+        // channel's signal at that same point in the chain and adds its own
+        // noise - so the bleed a later band receives has already been shaped by
+        // the bands before it, exactly as it would be running down a desk.
+        const float bleed = crosstalk ? kStageBleed : 0.0f;
+        const float hs = hiss ? kStageHiss : 0.0f;
+        for (int st = 0; st < 6; ++st)
         {
-            // Companded 12-bit with TPDF dither, as the SDE-3000 did and as
-            // WetDelay does: boost, quantise, take the boost back out.
-            l *= kQuantGain;
-            r *= kQuantGain;
-
-            constexpr float ditherAmp = 0.5f / kBitDepthLevels;
-            const float dl = (ditherDist(rng) + ditherDist(rng)) * ditherAmp;
-            const float dr = (ditherDist(rng) + ditherDist(rng)) * ditherAmp;
-            l = std::floor((l + dl) * kBitDepthLevels + 0.5f) / kBitDepthLevels;
-            r = std::floor((r + dr) * kBitDepthLevels + 0.5f) / kBitDepthLevels;
-
-            l /= kQuantGain;
-            r /= kQuantGain;
+            const float pl = l, pr = r;
+            l = chainL.all[st]->process(pl, saturate, kHeadroom, bleed * pr, hs);
+            r = chainR.all[st]->process(pr, saturate, kHeadroom, bleed * pl, hs);
         }
 
-        procL[i] = l;
-        procR[i] = r;
+        outL[i] = l;
+        outR[i] = r;
     }
+    }
+}
 
-    // --- back up to host rate -------------------------------------------
-    upL.upsample(procL.data(), n, outL, numSamples, kInternalRate, hostRate);
-    upR.upsample(procR.data(), n, outR, numSamples, kInternalRate, hostRate);
-
-    for (int i = 0; i < numSamples; ++i)
+//------------------------------------------------------------------------
+void EQEngine::setToleranceEnabled(bool on)
+{
+    for (int i = 0; i < 6; ++i)
     {
-        outL[i] = reconstructL.process(outL[i]);
-        outR[i] = reconstructR.process(outR[i]);
+        if (!on) { tolL[i] = tolR[i] = 1.0; }
     }
+    coeffsDirty = true;
 }
 
 //------------------------------------------------------------------------
