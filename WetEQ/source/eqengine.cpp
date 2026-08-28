@@ -19,6 +19,13 @@ EQEngine::EQEngine()
 void EQEngine::prepare(double hostSampleRate, int maxBlockSize)
 {
     hostRate = hostSampleRate > 0.0 ? hostSampleRate : 44100.0;
+    lastBlock = maxBlockSize > 0 ? maxBlockSize : 512;
+
+    // Snap rather than glide on prepare: the glide exists to hide a knob move,
+    // not to fade the plugin in every time the host starts.
+    smooth = resolve(current);
+    smoothPrimed = true;
+    driveCurrent = static_cast<float>(std::pow(10.0, smooth.gainDb / 20.0));
 
     const int internalMax =
         static_cast<int>(maxBlockSize * kInternalRate / hostRate) + 16;
@@ -64,38 +71,93 @@ void EQEngine::setSettings(const Settings& s)
 }
 
 //------------------------------------------------------------------------
+EQEngine::Resolved EQEngine::resolve(const Settings& s) const
+{
+    using namespace EQRange;
+    Resolved r;
+    r.gainDb = stepToLinear(s.gain, kMasterGainSteps, kMasterGainMin, kMasterGainMax);
+    r.hpHz = stepToLog(s.hpf, kFreqSteps, kHPFMin, kHPFMax);
+    r.lpHz = stepToLog(s.lpf, kFreqSteps, kLPFMin, kLPFMax);
+    r.lfG  = stepToLinear(s.lfGain,  kBandGainSteps, kBandGainMin, kBandGainMax);
+    r.lmfG = stepToLinear(s.lmfGain, kBandGainSteps, kBandGainMin, kBandGainMax);
+    r.hmfG = stepToLinear(s.hmfGain, kBandGainSteps, kBandGainMin, kBandGainMax);
+    r.hfG  = stepToLinear(s.hfGain,  kBandGainSteps, kBandGainMin, kBandGainMax);
+    r.lfF  = stepToLog(s.lfFreq,  kFreqSteps, kLFMin,  kLFMax);
+    r.lmfF = stepToLog(s.lmfFreq, kFreqSteps, kLMFMin, kLMFMax);
+    r.hmfF = stepToLog(s.hmfFreq, kFreqSteps, kHMFMin, kHMFMax);
+    r.hfF  = stepToLog(s.hfFreq,  kFreqSteps, kHFMin,  kHFMax);
+    return r;
+}
+
+//------------------------------------------------------------------------
+// One-pole glide. Frequencies move in the LOG domain so a step from 100 Hz to
+// 160 Hz takes the same time as one from 1 kHz to 1.6 kHz - a linear glide
+// through frequency would crawl at the bottom and lurch at the top.
+bool EQEngine::glideToward(Resolved& v, const Resolved& t, double a) const
+{
+    bool moving = false;
+    auto lin = [&](double& x, double target) {
+        const double d = target - x;
+        if (std::abs(d) > 1e-6) { x += d * a; moving = true; }
+        else x = target;
+    };
+    auto log = [&](double& x, double target) {
+        if (x <= 0.0) { x = target; return; }
+        const double d = std::log(target) - std::log(x);
+        if (std::abs(d) > 1e-6) { x = std::exp(std::log(x) + d * a); moving = true; }
+        else x = target;
+    };
+    lin(v.gainDb, t.gainDb);
+    log(v.hpHz, t.hpHz);   log(v.lpHz, t.lpHz);
+    lin(v.lfG,  t.lfG);    log(v.lfF,  t.lfF);
+    lin(v.lmfG, t.lmfG);   log(v.lmfF, t.lmfF);
+    lin(v.hmfG, t.hmfG);   log(v.hmfF, t.hmfF);
+    lin(v.hfG,  t.hfG);    log(v.hfF,  t.hfF);
+    return moving;
+}
+
+//------------------------------------------------------------------------
 void EQEngine::updateCoefficients()
 {
-    if (!coeffsDirty)
-        return;
+    const Resolved target = resolve(current);
+
+    if (!smoothPrimed)
+    {
+        smooth = target;
+        smoothPrimed = true;
+    }
+    else
+    {
+        // One block's worth of glide. Blocks vary in length, so the coefficient
+        // is derived from the block duration rather than assumed.
+        const double blockSec = static_cast<double>(lastBlock) / hostRate;
+        const double a = 1.0 - std::exp(-blockSec / (kGlideMs * 0.001));
+        const bool moving = glideToward(smooth, target, a);
+        if (!moving && !coeffsDirty)
+            return;
+    }
 
     const double sr = kInternalRate;
 
-    const double hp = hpfHz();
-    const double lp = lpfHz();
-
     // A high-pass parked at its lowest position and a low-pass at its highest
-    // should be out of circuit, not a gentle tilt across the whole band.
+    // should be out of circuit, not a gentle tilt across the whole band. Judged
+    // on the TARGET, not the glide: a filter on its way in should not flick
+    // between bypassed and active as it travels.
     const bool hpActive = current.hpf > 0;
     const bool lpActive = current.lpf < (EQRange::kFreqSteps - 1);
 
     for (Chain* c : { &chainL, &chainR })
     {
-        if (hpActive) c->hpf.setHighPass(sr, hp);
+        if (hpActive) c->hpf.setHighPass(sr, smooth.hpHz);
         else          c->hpf.setBypass();
 
-        if (lpActive) c->lpf.setLowPass(sr, lp);
+        if (lpActive) c->lpf.setLowPass(sr, smooth.lpHz);
         else          c->lpf.setBypass();
 
-        const double lfDb  = bandGainDb(current.lfGain);
-        const double lmfDb = bandGainDb(current.lmfGain);
-        const double hmfDb = bandGainDb(current.hmfGain);
-        const double hfDb  = bandGainDb(current.hfGain);
-
-        c->lf.setLowShelf(sr, lfHz(), lfDb);
-        c->lmf.setPeaking(sr, lmfHz(), lmfDb, proportionalQ(lmfDb));
-        c->hmf.setPeaking(sr, hmfHz(), hmfDb, proportionalQ(hmfDb));
-        c->hf.setHighShelf(sr, hfHz(), hfDb);
+        c->lf.setLowShelf(sr, smooth.lfF, smooth.lfG);
+        c->lmf.setPeaking(sr, smooth.lmfF, smooth.lmfG, proportionalQ(smooth.lmfG));
+        c->hmf.setPeaking(sr, smooth.hmfF, smooth.hmfG, proportionalQ(smooth.hmfG));
+        c->hf.setHighShelf(sr, smooth.hfF, smooth.hfG);
     }
 
     coeffsDirty = false;
@@ -115,17 +177,25 @@ void EQEngine::processStereo(const float* inL, const float* inR,
         prepare(hostRate, numSamples);
     }
 
+    lastBlock = numSamples;
     updateCoefficients();
 
     // --- input drive, then anti-alias, at host rate ----------------------
     // GAIN is here on purpose: before the 24 kHz / 12-bit stage, so it sets
     // where the signal sits against the quantisation floor. It is not makeup
     // gain and is not undone at the output.
-    const float drive = static_cast<float>(std::pow(10.0, gainDb() / 20.0));
+    // Smoothed PER SAMPLE, not per block. A detent is 5 dB - a factor of 1.78 -
+    // and applying that as a step at a block boundary is an audible click no
+    // matter how short the block. A one-pole here costs one multiply-add per
+    // sample and removes it outright.
+    const float driveTarget = static_cast<float>(std::pow(10.0, smooth.gainDb / 20.0));
+    const float driveA =
+        static_cast<float>(1.0 - std::exp(-1.0 / (kDriveMs * 0.001 * hostRate)));
     for (int i = 0; i < numSamples; ++i)
     {
-        preL[i] = antiAliasL.process(inL[i] * drive);
-        preR[i] = antiAliasR.process(inR[i] * drive);
+        driveCurrent += (driveTarget - driveCurrent) * driveA;
+        preL[i] = antiAliasL.process(inL[i] * driveCurrent);
+        preR[i] = antiAliasR.process(inR[i] * driveCurrent);
     }
 
     // --- down to 24 kHz --------------------------------------------------
