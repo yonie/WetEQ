@@ -176,7 +176,7 @@ METER_SEGMENTS = 12
 # proportionally far more visible. Inset and gap bring WetEQ into the same
 # proportion; the art behind is already black, so the inset just shows more of it.
 METER_INSET = 0         # px off each side of the painted window
-METER_GAP = 8           # px of black between segments
+METER_GAP = 11          # px of black between segments
 
 
 def lighting_field(knob, blur_frac=LIGHT_BLUR):
@@ -352,7 +352,7 @@ def write_uidesc(layout):
         a(f'\t\t      origin="{ox}, {oy}"')
         a(f'\t\t      size="{w}, {h}"')
         a(f'\t\t      num-segments="{m["segments"]}"')
-        a('\t\t      segment-gap="1"')
+        a(f'\t\t      segment-gap="{METER_GAP}"')
         a('\t\t      horizontal="false"')
         a('\t\t      transparent="false"/>')
         a('')
