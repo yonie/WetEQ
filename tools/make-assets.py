@@ -105,8 +105,11 @@ KNOBS = [
 # the meter then reads as a black box stuck on the panel rather than a window
 # sunk into it. The bevel is backplate art and must survive.
 #
-# The drawn stack is inset inside that by METER_MARGIN, so it has breathing room
-# on every side. The previous values did the opposite - they were the painted
+# The drawn stack is inset inside that by METER_MARGIN. Keep that inset SMALL:
+# the breathing room Ronald wants is BETWEEN the segments, not around the block.
+# A previous pass put 11 px round the outside and the whole meter shrank -
+# "more padding around the meter itself, which makes it look tiny". The gap is
+# what carries the look; the outer margin only needs to clear the bevel. The previous values did the opposite - they were the painted
 # extent "padded outwards", so the drawn rectangles were LARGER than the thing
 # they replace and sat hard against the bevel. Measured on a live capture that
 # left 3 px of margin on the left and 5 on the right, reading as both cramped
@@ -115,8 +118,8 @@ METER_PAINTED = {
     'kInputMeter':  (153, 198, 211, 652),
     'kOutputMeter': (316, 198, 374, 652),
 }
-METER_MARGIN_X = 11     # art px inset from the painted LEDs, each side
-METER_MARGIN_Y = 20
+METER_MARGIN_X = 2      # art px inset from the painted LEDs, each side
+METER_MARGIN_Y = 4
 
 METERS = {tag: (x0 + METER_MARGIN_X, y0 + METER_MARGIN_Y,
                 x1 - METER_MARGIN_X, y1 - METER_MARGIN_Y)
@@ -132,7 +135,7 @@ METER_SEGMENTS = 12
 # proportionally far more visible. Inset and gap bring WetEQ into the same
 # proportion; the art behind is already black, so the inset just shows more of it.
 METER_INSET = 0         # px off each side of the painted window
-METER_GAP = 6           # px of black between segments
+METER_GAP = 8           # px of black between segments
 
 
 def lighting_field(knob, blur_frac=LIGHT_BLUR):
