@@ -51,12 +51,15 @@ STEPS = 9
 GAIN_STEPS = STEPS
 FREQ_STEPS = STEPS
 
-# Supersampling for the knob renders. OFF at Ronald's call, 2026-08-28.
-# It does smooth the silhouette - at 1 the rim and the pointer stair-step
-# visibly, see shots/weteq-supersampling.png - but it is not what caused the
-# banding he was chasing, and he prefers the harder, grainier result. Set this
-# back to 2 to restore it; nothing else needs to change.
-SUPERSAMPLE = 1
+# Supersampling for the knob renders. Back ON after trying it off: at 1 the rim
+# and pointer stair-step, and the grain goes harsh because the noise field is no
+# longer averaged - against a backplate that is itself smooth, the knobs read as
+# a different medium. The backplate sets the standard the knobs have to meet.
+#
+# 2 and 3 are visually indistinguishable at the sizes these are drawn, so 2 it
+# is. Supersampling was never the cause of the banding at grazing angles; that
+# is the flutes plus an over-simple environment.
+SUPERSAMPLE = 2
 
 CAP_SATURATION = 1.30   # how far past the painted colour the caps are pushed
 
