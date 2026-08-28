@@ -149,12 +149,23 @@ int main()
     {
         EQEngine::Settings flat;   // defaults: all gains centred, HPF/LPF parked
         // Quantiser off so this measures the filter path, not the dither floor.
-        eng.setQuantizationEnabled(false);
+        // Response is measured with the amplifiers linear. Saturation is real and
+    // wanted, but it compresses a +15 dB boost by about 2 dB, and a curve
+    // measurement should show the filter, not the filter plus its drive.
+    eng.setQuantizationEnabled(false);
+    eng.setSaturationEnabled(false);
+    eng.setHissEnabled(false);
+        eng.setSaturationEnabled(false);
+        eng.setHissEnabled(false);
         const double at1k = toneResponse(eng, flat, 1000.0);
         const double at100 = toneResponse(eng, flat, 100.0);
         check("flat @ 1 kHz", at1k, 0.0, 1.5);
         check("flat @ 100 Hz", at100, 0.0, 1.5);
         eng.setQuantizationEnabled(true);
+    eng.setSaturationEnabled(true);
+    eng.setHissEnabled(true);
+        eng.setSaturationEnabled(true);
+        eng.setHissEnabled(true);
     }
 
     // --- each band, boost and cut, measured at its own centre ------------
