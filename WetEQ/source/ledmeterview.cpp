@@ -34,6 +34,25 @@ void LEDMeterView::draw(CDrawContext* context)
     context->setFillColor(windowBlack);
     context->drawRect(getViewSize(), kDrawFilled);
 
+    // Glow first, so the segments themselves land on top of it and stay crisp.
+    // Rings step outwards from each lit segment with the alpha falling off, and
+    // they are drawn for every lit LED before any segment is filled - otherwise
+    // a neighbour's glow would paint over the LED below it.
+    for (int i = 0; i < litCount; i++)
+    {
+        CRect seg = calculateSegmentRect(i);
+        CColor glow = getLitColor(i);
+        for (int s = glowSpread; s >= 1; s--)
+        {
+            CRect halo = seg;
+            halo.extend(static_cast<CCoord>(s), static_cast<CCoord>(s));
+            glow.alpha = static_cast<uint8_t>(glowAlpha * (glowSpread - s + 1)
+                                              / (glowSpread + 1));
+            context->setFillColor(glow);
+            context->drawRect(halo, kDrawFilled);
+        }
+    }
+
     // Draw each segment
     for (int i = 0; i < numSegments; i++)
     {

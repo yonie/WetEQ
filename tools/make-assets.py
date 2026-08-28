@@ -22,7 +22,9 @@ highlight back at the top while leaving every rotating detail alone.
 
     python tools/make-assets.py
 """
+import argparse
 import json
+import math
 import os
 import sys
 
@@ -50,6 +52,16 @@ GAIN_STEPS = STEPS
 FREQ_STEPS = STEPS
 
 CAP_SATURATION = 1.30   # how far past the painted colour the caps are pushed
+
+# Caps that do NOT come from the art. The panel paints HPF and LPF a warm cream,
+# which lands between the coloured caps and a white one and reads as neither.
+# The SSL software look Ronald is after puts those two on a near-neutral white
+# cap with a dark pointer, while every coloured cap keeps a white one - and
+# knob3d already picks the pointer by cap luminance, so only the cap is set here.
+CAP_OVERRIDE = {
+    'hpf': (233, 232, 229),
+    'lpf': (233, 232, 229),
+}
 
 LIGHT_BLUR = 0.18       # lighting field = luminance blurred by this x diameter
 LIGHT_CLIP = (0.55, 1.85)   # bound the correction so dark knobs cannot blow up
@@ -103,8 +115,8 @@ METER_PAINTED = {
     'kInputMeter':  (153, 198, 211, 652),
     'kOutputMeter': (316, 198, 374, 652),
 }
-METER_MARGIN_X = 4      # art px inset from the painted LEDs, each side
-METER_MARGIN_Y = 8
+METER_MARGIN_X = 11     # art px inset from the painted LEDs, each side
+METER_MARGIN_Y = 20
 
 METERS = {tag: (x0 + METER_MARGIN_X, y0 + METER_MARGIN_Y,
                 x1 - METER_MARGIN_X, y1 - METER_MARGIN_Y)
@@ -120,7 +132,7 @@ METER_SEGMENTS = 12
 # proportionally far more visible. Inset and gap bring WetEQ into the same
 # proportion; the art behind is already black, so the inset just shows more of it.
 METER_INSET = 0         # px off each side of the painted window
-METER_GAP = 4           # px of black between segments (art is 17% of pitch)
+METER_GAP = 6           # px of black between segments
 
 
 def lighting_field(knob, blur_frac=LIGHT_BLUR):
@@ -143,6 +155,17 @@ def relit_frame(knob, light, angle):
     px = np.asarray(rot).astype(float)
     px[..., :3] = np.clip(px[..., :3] * ratio, 0, 255)
     return Image.fromarray(px.astype('uint8'), 'RGBA')
+
+
+def _parse_args():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument('--tilt', type=float, default=0.0, metavar='DEG',
+                    help='raise the knob camera off the axis. 0 is what ships; '
+                         'anything else is for looking, since a tilted knob on '
+                         'a panel drawn face-on is a lie about where the viewer '
+                         'is standing')
+    ap.add_argument('--out', default=OUT, help='where to write the assets')
+    return ap.parse_args()
 
 
 def main():
@@ -185,7 +208,11 @@ def main():
         # Solve for the albedo that RENDERS as the painted colour, then push the
         # saturation past it a little: the panel art's caps are already muted by
         # its own lighting, and reproducing that exactly reads as washed out.
-        cap = knob3d.albedo_for(painted, saturation=CAP_SATURATION)
+        if name in CAP_OVERRIDE:
+            painted = CAP_OVERRIDE[name]
+            cap = knob3d.albedo_for(painted, saturation=1.0)
+        else:
+            cap = knob3d.albedo_for(painted, saturation=CAP_SATURATION)
 
         r_px = ring * knob3d.BODY_OVER_RING * scale
         probe, off = knob3d.render_at(r_px, 0.0, cap)
@@ -312,5 +339,31 @@ def write_uidesc(layout):
     print(f'\nwrote {path}')
 
 
+def _tilted(deg):
+    """Raise knob3d's camera off the axis for the duration of a run."""
+    import contextlib
+
+    @contextlib.contextmanager
+    def ctx():
+        if not deg:
+            yield
+            return
+        saved = knob3d.CAM.copy()
+        t = math.radians(deg)
+        dist = float(np.linalg.norm(knob3d.CAM - knob3d.TARGET))
+        knob3d.CAM = knob3d.TARGET + np.array([0.0, -math.sin(t), math.cos(t)]) * dist
+        try:
+            yield
+        finally:
+            knob3d.CAM = saved
+    return ctx()
+
+
 if __name__ == '__main__':
-    main()
+    _args = _parse_args()
+    OUT = _args.out
+    with _tilted(_args.tilt):
+        if _args.tilt:
+            print(f'camera raised {_args.tilt:g} deg off the axis '
+                  f'-- FOR LOOKING ONLY, do not ship these')
+        main()
