@@ -71,7 +71,12 @@ SUPERSAMPLE = 2
 # larger means a more distant viewer and a flatter panel. 32000 puts about one
 # degree on the outermost knobs, which is enough to read as depth and not enough
 # to look like a fisheye.
-VIEWER_DISTANCE = 32000.0
+# Larger means a more distant viewer and a flatter panel. Settled at 16000
+# after bracketing it: 32000 (about 1 degree at the extremes) was too subtle to
+# even confirm the direction by eye, and 6000 was clearly too much. 16000 puts
+# roughly 2.5 degrees on the outermost knobs - enough to read as depth without
+# announcing itself.
+VIEWER_DISTANCE = 16000.0
 # Eye height is on the HMF row, not the geometric middle of the panel. Ronald's
 # call: that is where you actually look when the thing is in front of you, a bit
 # above centre. It also spreads the vertical lean more evenly across the four
@@ -261,8 +266,14 @@ def main():
         # and the cap covers R_CAP of that. Divide back out rather than carry a
         # separate fudge factor - this is why BODY_OVER_RING is gone.
         r_px = (cap_r * scale) / knob3d.R_CAP
+        # Direction from the KNOB to the EYE. Art y runs downward, so a knob
+        # ABOVE the eye row has the smaller cy and the eye is BELOW it, which is
+        # (cy - eye_y) and not the other way round. Getting this backwards tilts
+        # the whole panel inside out - the top knobs get looked down on and the
+        # bottom ones looked up at, which is exactly wrong and, at one degree,
+        # just subtle enough to look like nothing more than "off".
         view = ((PANEL_EYE[0] - cx) / VIEWER_DISTANCE,
-                (PANEL_EYE[1] - cy) / VIEWER_DISTANCE)
+                (cy - PANEL_EYE[1]) / VIEWER_DISTANCE)
         probe, off = knob3d.render_at(r_px, 0.0, cap, ss=SUPERSAMPLE, view=view)
         fd = probe.size[0]
 
