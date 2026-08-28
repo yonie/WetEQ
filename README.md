@@ -2,7 +2,7 @@
 
 # WetEQ
 
-**A four-band console equaliser. Nine detents per knob. No Q control, no menus, no launcher.**
+**A four-band console equaliser with stepped controls and no Q knob.**
 
 ![VST3](https://img.shields.io/badge/VST3-Windows%20·%20macOS%20·%20Linux-blue)
 ![Licence](https://img.shields.io/badge/licence-MIT-green)
@@ -16,28 +16,29 @@
 
 ## What it is
 
-An analog console EQ, modelled as a circuit rather than as a curve.
+An analog console EQ. Each band is a circuit rather than a filter curve: every
+stage is its own amplifier, saturating inside its own filter loop, bleeding a
+little into the other channel and contributing its own noise.
 
-Every stage is its own amplifier: it saturates inside its own filter loop, bleeds
-into the other channel, and adds its own noise. The bells get their bandwidth
-from the boost/cut pot damping a gyrator tank — which is why a gentle move is
-broad and a hard one is tighter, without a Q knob anywhere on the panel.
+The bells take their bandwidth from the boost/cut pot damping a gyrator tank, so
+Q rises with boost the way it does on the hardware. That is why there is no Q
+control on the panel.
 
-Eleven controls. Every one of them stepped, nine positions each, because an EQ
-you can nudge by 0.4 dB is an EQ you will spend an hour nudging.
+There are eleven controls and all of them are stepped, nine positions each. You
+cannot nudge this EQ by 0.4 dB, which is the point.
 
 ## Sound
 
-**Flat is flat** — ±0.1 dB from 20 Hz to 20 kHz with everything out of circuit.
-Nothing is resampled, quantised or band-limited. Insert it and nothing happens
-until you turn something.
+With everything out of circuit the response is within ±0.1 dB from 20 Hz to
+20 kHz. Nothing is resampled, quantised or band-limited, so an inserted WetEQ
+does nothing at all until you turn a control.
 
-**GAIN is drive, not makeup.** It sits ahead of the equaliser and pushes the
-input amplifier: clean at the centre detent, 2.8% THD at +10, and audibly
-working by +20.
+GAIN sits ahead of the equaliser and drives the input amplifier. It is not
+makeup gain and is not compensated at the output: clean at the centre detent,
+2.8% THD at +10, clearly working by +20.
 
-**Boost and cut mirror each other**, and the filters leave circuit entirely at
-the ends of their travel rather than tilting the band from a parked position.
+Boost and cut mirror each other, and at the ends of their travel the filters
+leave circuit entirely.
 
 ![Specification](docs/signal-path.png)
 
