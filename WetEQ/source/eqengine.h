@@ -160,8 +160,21 @@ private:
     // small boost is broad and musical and a large one is surgical. No Q knob.
     static double proportionalQ(double gainDb)
     {
+        // BROAD, and the proportional part is deliberately gentle. The textbook
+        // SSL range is 0.70..2.00; that was audibly resonant at full boost here
+        // and too surgical at small moves to draw a smooth curve with. Tuned by
+        // ear in three passes down to 0.32..0.47 - about 3.3 octaves at a gentle
+        // move and still 2.7 at full.
+        //
+        // The narrowing with gain is now slight on purpose. An EQ with nine
+        // fixed detents and no Q control is for shaping a sound, not correcting
+        // one, and a bell that tightens hard under boost fights that: it starts
+        // resonating exactly when you ask it for the most.
+        //
+        // Still proportional - a harder push is still the narrower bell - just
+        // across a narrow spread of very wide curves.
         const double mag = std::abs(gainDb) / 15.0;      // 0..1
-        return 0.70 + 1.30 * mag;                        // 0.70..2.00
+        return 0.32 + 0.15 * mag;                        // 0.32..0.47
     }
 
     void updateCoefficients();
