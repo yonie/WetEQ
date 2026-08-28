@@ -61,6 +61,19 @@ FREQ_STEPS = STEPS
 # is the flutes plus an over-simple environment.
 SUPERSAMPLE = 2
 
+# One viewer, one eye, in front of the middle of the panel. A knob away from
+# that centre is genuinely seen off its own axis - the ones at the top looked at
+# slightly from below, the ones at the bottom from slightly above, and the same
+# left to right. Rendering all eleven dead-on is what makes a panel look printed.
+#
+# The camera aims at each knob's BASE, so the mounting stays exactly where the
+# art paints it and only the body leans. Distance is in original-art pixels;
+# larger means a more distant viewer and a flatter panel. 32000 puts about one
+# degree on the outermost knobs, which is enough to read as depth and not enough
+# to look like a fisheye.
+VIEWER_DISTANCE = 32000.0
+PANEL_EYE = (512.0, 768.0)      # where the viewer is centred, in art pixels
+
 CAP_SATURATION = 1.30   # how far past the painted colour the caps are pushed
 
 # Caps that do NOT come from the art. The panel paints HPF and LPF a warm cream,
@@ -244,14 +257,16 @@ def main():
         # and the cap covers R_CAP of that. Divide back out rather than carry a
         # separate fudge factor - this is why BODY_OVER_RING is gone.
         r_px = (cap_r * scale) / knob3d.R_CAP
-        probe, off = knob3d.render_at(r_px, 0.0, cap, ss=SUPERSAMPLE)
+        view = ((PANEL_EYE[0] - cx) / VIEWER_DISTANCE,
+                (PANEL_EYE[1] - cy) / VIEWER_DISTANCE)
+        probe, off = knob3d.render_at(r_px, 0.0, cap, ss=SUPERSAMPLE, view=view)
         fd = probe.size[0]
 
         strip = Image.new('RGBA', (fd, fd * steps), (0, 0, 0, 0))
         step = SWEEP / (steps - 1)
         for i in range(steps):
             angle = -SWEEP / 2 + i * step        # frame 0 = min = -135 deg
-            frame = probe if i == 0 and False else knob3d.render_at(r_px, angle, cap, ss=SUPERSAMPLE)[0]
+            frame = probe if i == 0 and False else knob3d.render_at(r_px, angle, cap, ss=SUPERSAMPLE, view=view)[0]
             strip.paste(frame, (0, i * fd), frame)
         strip.save(os.path.join(OUT, f'knob_{name}.png'))
 
@@ -260,7 +275,8 @@ def main():
         layout['knobs'][name] = dict(origin=[ox, oy], size=[fd, fd],
                                      frames=steps, tag=tag)
         print(f'knob_{name}.png  {fd}x{fd} x{steps} frames  '
-              f'origin=({ox},{oy})  painted{painted} -> albedo{cap}  {tag}')
+              f'origin=({ox},{oy})  tilt=({math.degrees(math.atan(view[0])):+.2f},'
+              f'{math.degrees(math.atan(view[1])):+.2f}) deg  {tag}')
 
     for tag, (x0, y0, x1, y1) in METERS.items():
         ox, oy = int(round(x0 * scale)) + METER_INSET, int(round(y0 * scale))
