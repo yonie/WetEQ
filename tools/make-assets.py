@@ -104,6 +104,18 @@ CAP_ALIAS = {
     'gain': 'hf_gain',
 }
 
+# Per-knob nudge in PANEL pixels, applied to where the filmstrip is pasted.
+# Kept separate from the measured centres in KNOBS on purpose: those are what
+# the edge fit found and should stay honest. This is the correction on top,
+# where the painted knob still shows past the render - a dark arc above the rim
+# on these three. The fit is good to a pixel or so and the rendered knob is
+# fractionally smaller than the painted one, which is enough to leak at the top.
+KNOB_NUDGE = {
+    'lmf_freq': (0, -2),
+    'lf_gain':  (0, -2),
+    'lf_freq':  (0, -2),
+}
+
 LIGHT_BLUR = 0.18       # lighting field = luminance blurred by this x diameter
 LIGHT_CLIP = (0.55, 1.85)   # bound the correction so dark knobs cannot blow up
 
@@ -266,8 +278,9 @@ def main():
             strip = Image.open(os.path.join(OUT, f'knob_{name}.png'))
             fd = strip.size[0]
             off = fd // 2
-            ox = int(round(cx * scale)) - off
-            oy = int(round(cy * scale)) - off
+            nx, ny = KNOB_NUDGE.get(name, (0, 0))
+            ox = int(round(cx * scale)) - off + nx
+            oy = int(round(cy * scale)) - off + ny
             layout['knobs'][name] = dict(origin=[ox, oy], size=[fd, fd],
                                          frames=steps, tag=tag)
             print(f'knob_{name}.png  reused  {fd}x{fd}  origin=({ox},{oy})')
@@ -305,8 +318,9 @@ def main():
             strip.paste(frame, (0, i * fd), frame)
         strip.save(os.path.join(OUT, f'knob_{name}.png'))
 
-        ox = int(round(cx * scale)) - off
-        oy = int(round(cy * scale)) - off
+        nx, ny = KNOB_NUDGE.get(name, (0, 0))
+        ox = int(round(cx * scale)) - off + nx
+        oy = int(round(cy * scale)) - off + ny
         layout['knobs'][name] = dict(origin=[ox, oy], size=[fd, fd],
                                      frames=steps, tag=tag)
         print(f'knob_{name}.png  {fd}x{fd} x{steps} frames  '
