@@ -40,7 +40,7 @@
 		      origin="81, 105"
 		      size="28, 232"
 		      num-segments="12"
-		      segment-gap="1"
+		      segment-gap="11"
 		      horizontal="false"
 		      transparent="false"/>
 
@@ -49,7 +49,7 @@
 		      origin="166, 105"
 		      size="28, 232"
 		      num-segments="12"
-		      segment-gap="1"
+		      segment-gap="11"
 		      horizontal="false"
 		      transparent="false"/>
 
