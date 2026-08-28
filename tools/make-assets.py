@@ -51,6 +51,13 @@ STEPS = 9
 GAIN_STEPS = STEPS
 FREQ_STEPS = STEPS
 
+# Supersampling for the knob renders. OFF at Ronald's call, 2026-08-28.
+# It does smooth the silhouette - at 1 the rim and the pointer stair-step
+# visibly, see shots/weteq-supersampling.png - but it is not what caused the
+# banding he was chasing, and he prefers the harder, grainier result. Set this
+# back to 2 to restore it; nothing else needs to change.
+SUPERSAMPLE = 1
+
 CAP_SATURATION = 1.30   # how far past the painted colour the caps are pushed
 
 # Caps that do NOT come from the art. The panel paints HPF and LPF a warm cream,
@@ -63,38 +70,47 @@ CAP_OVERRIDE = {
     'lpf': (233, 232, 229),
 }
 
+# Caps that borrow another knob's colour rather than their own painted one.
+# GAIN takes HF's red: the art paints it a warm grey, which reads as a fifth
+# colour on a panel that already has four, and it is the master control so it
+# should look like it belongs to the set. Aliased rather than copied, so it
+# tracks if the art changes.
+CAP_ALIAS = {
+    'gain': 'hf_gain',
+}
+
 LIGHT_BLUR = 0.18       # lighting field = luminance blurred by this x diameter
 LIGHT_CLIP = (0.55, 1.85)   # bound the correction so dark knobs cannot blow up
 
-# name, centre x, centre y, TICK-RING radius (on the 1024x1536 original),
-# control tag, step count
+# name, centre x, centre y, CAP radius (on the 1024x1536 original), tag, steps
 #
-# Centres and ring radii come from fitting a circle to the ring of tick dots
-# painted around each knob. That works where body detection does not: the dots
-# are light on a dark panel for every knob INCLUDING the two black LF ones,
-# which have no detectable body edge at all.
+# Measured by casting rays out from each knob and fitting a circle to where the
+# gradient peaks - the painted cap's EDGE. Two earlier methods were wrong in
+# ways worth remembering:
 #
-# Two filters make the fit trustworthy. The sweep is 270 degrees, so the bottom
-# 90 has no dots - anything found down there is the numeral row ("-15", "600"),
-# and including it drags the centre several pixels down, which is exactly what
-# the first attempt did. And real dots are all one size, so blobs far off the
-# median area are glyph fragments.
+#   Tick-ring fitting put the two HMF knobs 13.6 px apart in y when they are
+#   painted level, because a stray blob joins or leaves the ring and drags the
+#   fit. That is the "HMF right hand button placed too high" Ronald spotted.
 #
-# The result is self-checking: every small knob came out with a ring radius of
-# 78-80 px and GAIN with 107, and the columns landed on x 619 / 866 to within a
-# pixel. A panel laid out on a regular grid should do exactly that.
+#   Centroiding the cap is worse still, biased 15-20 px up and left on every
+#   knob, because it finds the middle of the LIT part rather than the middle of
+#   the cap. Anything that weights by brightness inherits the lighting.
+#
+# An edge fit cannot be pulled by lighting, and the result is self-checking:
+# every pair now shares a y within 2 px, both columns hold their x within 3 px,
+# and the cap radius lands on 0.74 of the tick ring for all ten small knobs.
 KNOBS = [
-    ('hf_gain',   619.1,  301.5, 78.9, 'kHFGainParam',  GAIN_STEPS),
-    ('hf_freq',   866.7,  301.6, 79.2, 'kHFFreqParam',  FREQ_STEPS),
-    ('hmf_gain',  618.9,  653.3, 78.9, 'kHMFGainParam', GAIN_STEPS),
-    ('hmf_freq',  865.0,  639.7, 79.2, 'kHMFFreqParam', FREQ_STEPS),
-    ('gain',      251.1,  898.8, 107.5, 'kGainParam',   GAIN_STEPS),
-    ('lmf_gain',  619.0, 1003.5, 79.0, 'kLMFGainParam', GAIN_STEPS),
-    ('lmf_freq',  866.6, 1003.6, 79.3, 'kLMFFreqParam', FREQ_STEPS),
-    ('hpf',       139.5, 1247.6, 80.0, 'kHPFParam',     FREQ_STEPS),
-    ('lpf',       359.5, 1247.6, 79.9, 'kLPFParam',     FREQ_STEPS),
-    ('lf_gain',   619.6, 1336.1, 78.3, 'kLFGainParam',  GAIN_STEPS),
-    ('lf_freq',   866.6, 1337.3, 79.3, 'kLFFreqParam',  FREQ_STEPS),
+    ('hf_gain',   617.3,  295.4, 60.1, 'kHFGainParam',  GAIN_STEPS),
+    ('hf_freq',   868.2,  296.8, 58.0, 'kHFFreqParam',  FREQ_STEPS),
+    ('hmf_gain',  617.1,  648.3, 60.4, 'kHMFGainParam', GAIN_STEPS),
+    ('hmf_freq',  866.7,  646.4, 61.3, 'kHMFFreqParam', FREQ_STEPS),
+    ('gain',      249.8,  893.5, 75.4, 'kGainParam',    GAIN_STEPS),
+    ('lmf_gain',  618.3,  999.6, 59.1, 'kLMFGainParam', GAIN_STEPS),
+    ('lmf_freq',  867.9,  999.8, 58.5, 'kLMFFreqParam', FREQ_STEPS),
+    ('hpf',       137.8, 1243.8, 59.3, 'kHPFParam',     FREQ_STEPS),
+    ('lpf',       358.5, 1243.7, 59.0, 'kLPFParam',     FREQ_STEPS),
+    ('lf_gain',   619.9, 1333.7, 58.1, 'kLFGainParam',  GAIN_STEPS),
+    ('lf_freq',   868.5, 1333.7, 58.3, 'kLFFreqParam',  FREQ_STEPS),
 ]
 
 # Meter geometry, in original-art coordinates.
@@ -201,13 +217,17 @@ def main():
 
     layout = {'panel': {'size': [tw, TARGET_H]}, 'knobs': {}, 'meters': {}}
 
-    for name, cx, cy, ring, tag, steps in KNOBS:
-        # Sample the painted cap colour from the middle of the knob, well inside
-        # the pointer and the skirt, so the 3D cap keeps each band's identity.
-        s = int(ring * 0.30)
+    # Sample every painted cap first, so CAP_ALIAS can point one knob at
+    # another's colour without depending on the order they are rendered in.
+    _painted = {}
+    for name, cx, cy, cap_r, tag, steps in KNOBS:
+        s = int(cap_r * 0.45)
         patch = np.asarray(src.crop((int(cx - s), int(cy - s),
                                      int(cx + s), int(cy + s))).convert('RGB'))
-        painted = tuple(int(v) for v in np.median(patch.reshape(-1, 3), axis=0))
+        _painted[name] = tuple(int(v) for v in np.median(patch.reshape(-1, 3), axis=0))
+
+    for name, cx, cy, cap_r, tag, steps in KNOBS:
+        painted = _painted[CAP_ALIAS.get(name, name)]
         # Solve for the albedo that RENDERS as the painted colour, then push the
         # saturation past it a little: the panel art's caps are already muted by
         # its own lighting, and reproducing that exactly reads as washed out.
@@ -217,15 +237,18 @@ def main():
         else:
             cap = knob3d.albedo_for(painted, saturation=CAP_SATURATION)
 
-        r_px = ring * knob3d.BODY_OVER_RING * scale
-        probe, off = knob3d.render_at(r_px, 0.0, cap)
+        # The measurement is of the CAP; the 3D knob's silhouette is its SHAFT,
+        # and the cap covers R_CAP of that. Divide back out rather than carry a
+        # separate fudge factor - this is why BODY_OVER_RING is gone.
+        r_px = (cap_r * scale) / knob3d.R_CAP
+        probe, off = knob3d.render_at(r_px, 0.0, cap, ss=SUPERSAMPLE)
         fd = probe.size[0]
 
         strip = Image.new('RGBA', (fd, fd * steps), (0, 0, 0, 0))
         step = SWEEP / (steps - 1)
         for i in range(steps):
             angle = -SWEEP / 2 + i * step        # frame 0 = min = -135 deg
-            frame = probe if i == 0 and False else knob3d.render_at(r_px, angle, cap)[0]
+            frame = probe if i == 0 and False else knob3d.render_at(r_px, angle, cap, ss=SUPERSAMPLE)[0]
             strip.paste(frame, (0, i * fd), frame)
         strip.save(os.path.join(OUT, f'knob_{name}.png'))
 
