@@ -72,7 +72,11 @@ SUPERSAMPLE = 2
 # degree on the outermost knobs, which is enough to read as depth and not enough
 # to look like a fisheye.
 VIEWER_DISTANCE = 32000.0
-PANEL_EYE = (512.0, 768.0)      # where the viewer is centred, in art pixels
+# Eye height is on the HMF row, not the geometric middle of the panel. Ronald's
+# call: that is where you actually look when the thing is in front of you, a bit
+# above centre. It also spreads the vertical lean more evenly across the four
+# bands than centring on the panel did.
+PANEL_EYE = (512.0, 647.0)      # HMF row; x is the panel centre
 
 CAP_SATURATION = 1.30   # how far past the painted colour the caps are pushed
 
