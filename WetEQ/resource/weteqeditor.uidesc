@@ -105,7 +105,7 @@
 
 		<view class="SteppedKnob"
 		      control-tag="kLMFFreqParam"
-		      origin="412, 481"
+		      origin="412, 479"
 		      size="81, 81"
 		      bitmap="knob_lmf_freq"
 		      step-count="9"
@@ -129,7 +129,7 @@
 
 		<view class="SteppedKnob"
 		      control-tag="kLFGainParam"
-		      origin="283, 655"
+		      origin="283, 653"
 		      size="81, 81"
 		      bitmap="knob_lf_gain"
 		      step-count="9"
@@ -137,7 +137,7 @@
 
 		<view class="SteppedKnob"
 		      control-tag="kLFFreqParam"
-		      origin="412, 655"
+		      origin="412, 653"
 		      size="81, 81"
 		      bitmap="knob_lf_freq"
 		      step-count="9"
