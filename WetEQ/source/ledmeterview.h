@@ -48,6 +48,12 @@ protected:
     // permanently pinned.
     VSTGUI::CColor windowBlack{0, 0, 0, 255};
 
+    // A lit LED spills light onto the black around it. Drawn as a few
+    // translucent rings stepping outwards from each lit segment, brightest
+    // against the segment. Only lit ones glow - an unlit LED emits nothing.
+    int glowSpread = 3;         // px the spill reaches
+    uint8_t glowAlpha = 42;     // alpha of the innermost ring
+
     VSTGUI::CColor greenLit{0, 255, 0, 255};
     VSTGUI::CColor greenDark{10, 42, 10, 255};
     
