@@ -71,12 +71,12 @@ SUPERSAMPLE = 2
 # larger means a more distant viewer and a flatter panel. 32000 puts about one
 # degree on the outermost knobs, which is enough to read as depth and not enough
 # to look like a fisheye.
-# Larger means a more distant viewer and a flatter panel. Settled at 16000
-# after bracketing it: 32000 (about 1 degree at the extremes) was too subtle to
-# even confirm the direction by eye, and 6000 was clearly too much. 16000 puts
-# roughly 2.5 degrees on the outermost knobs - enough to read as depth without
-# announcing itself.
-VIEWER_DISTANCE = 16000.0
+# Larger means a more distant viewer and a flatter panel. Bracketed: 6000 was
+# far too much, 16000 still too pronounced, 32000 too subtle to even confirm the
+# direction by eye when the sign was wrong. 26000 puts about 1.5 degrees on the
+# outermost knobs - the viewer standing back, the panel nearly flat, but not so
+# flat that the knobs stop looking like separate objects.
+VIEWER_DISTANCE = 26000.0
 # Eye height is on the HMF row, not the geometric middle of the panel. Ronald's
 # call: that is where you actually look when the thing is in front of you, a bit
 # above centre. It also spreads the vertical lean more evenly across the four
@@ -155,12 +155,17 @@ KNOBS = [
 # they replace and sat hard against the bevel. Measured on a live capture that
 # left 3 px of margin on the left and 5 on the right, reading as both cramped
 # and off-centre.
+# The exact extent of the LEDs painted into the render, found by masking on
+# saturated colour rather than eyeballed. The drawn stack REPLACES these, so it
+# should occupy the same rectangle - no inset, no padding. The previous values
+# were a looser hand-taken bound and drew 28x232 where the art paints 25.5x226,
+# overhanging 3.3 px above and 2.8 below, which reads as the strip sitting high.
 METER_PAINTED = {
-    'kInputMeter':  (153, 198, 211, 652),
-    'kOutputMeter': (316, 198, 374, 652),
+    'kInputMeter':  (158, 208, 206, 642),
+    'kOutputMeter': (320, 208, 368, 642),
 }
-METER_MARGIN_X = 2      # art px inset from the painted LEDs, each side
-METER_MARGIN_Y = 4
+METER_MARGIN_X = 0      # art px inset from the painted LEDs, each side
+METER_MARGIN_Y = 0
 
 METERS = {tag: (x0 + METER_MARGIN_X, y0 + METER_MARGIN_Y,
                 x1 - METER_MARGIN_X, y1 - METER_MARGIN_Y)
@@ -209,6 +214,11 @@ def _parse_args():
                          'a panel drawn face-on is a lie about where the viewer '
                          'is standing')
     ap.add_argument('--out', default=OUT, help='where to write the assets')
+    ap.add_argument('--skip-knobs', action='store_true',
+                    help='reuse the existing filmstrips and only redo the '
+                         'backplate and the .uidesc. The 99 knob renders are '
+                         'nearly all of the runtime, and a meter or layout '
+                         'tweak does not touch them')
     return ap.parse_args()
 
 
@@ -233,8 +243,8 @@ def main():
     # inset here produced.
     art = ImageDraw.Draw(panel)
     for (x0, y0, x1, y1) in METER_PAINTED.values():
-        art.rectangle([round(x0 * scale) - 1, round(y0 * scale) - 1,
-                       round(x1 * scale) + 1, round(y1 * scale) + 1],
+        art.rectangle([round(x0 * scale) - 2, round(y0 * scale) - 2,
+                       round(x1 * scale) + 2, round(y1 * scale) + 2],
                       fill=(0, 0, 0))
 
     panel.save(os.path.join(OUT, 'backplate.png'))
@@ -252,6 +262,16 @@ def main():
         _painted[name] = tuple(int(v) for v in np.median(patch.reshape(-1, 3), axis=0))
 
     for name, cx, cy, cap_r, tag, steps in KNOBS:
+        if SKIP_KNOBS:
+            strip = Image.open(os.path.join(OUT, f'knob_{name}.png'))
+            fd = strip.size[0]
+            off = fd // 2
+            ox = int(round(cx * scale)) - off
+            oy = int(round(cy * scale)) - off
+            layout['knobs'][name] = dict(origin=[ox, oy], size=[fd, fd],
+                                         frames=steps, tag=tag)
+            print(f'knob_{name}.png  reused  {fd}x{fd}  origin=({ox},{oy})')
+            continue
         painted = _painted[CAP_ALIAS.get(name, name)]
         # Solve for the albedo that RENDERS as the painted colour, then push the
         # saturation past it a little: the panel art's caps are already muted by
@@ -419,9 +439,12 @@ def _tilted(deg):
     return ctx()
 
 
+SKIP_KNOBS = False
+
 if __name__ == '__main__':
     _args = _parse_args()
     OUT = _args.out
+    SKIP_KNOBS = _args.skip_knobs
     with _tilted(_args.tilt):
         if _args.tilt:
             print(f'camera raised {_args.tilt:g} deg off the axis '

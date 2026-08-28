@@ -142,23 +142,23 @@
   "meters": {
     "kInputMeter": {
       "origin": [
-        81,
-        105
+        82,
+        108
       ],
       "size": [
-        28,
-        232
+        25,
+        226
       ],
       "segments": 12
     },
     "kOutputMeter": {
       "origin": [
-        166,
-        105
+        167,
+        108
       ],
       "size": [
-        28,
-        232
+        25,
+        226
       ],
       "segments": 12
     }

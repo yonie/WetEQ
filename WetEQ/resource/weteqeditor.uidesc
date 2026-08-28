@@ -37,8 +37,8 @@
 		<!-- LED meters: 12 segments, vertical, green at the bottom -->
 		<view class="LEDMeterView"
 		      control-tag="kInputMeter"
-		      origin="81, 105"
-		      size="28, 232"
+		      origin="82, 108"
+		      size="25, 226"
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
@@ -46,8 +46,8 @@
 
 		<view class="LEDMeterView"
 		      control-tag="kOutputMeter"
-		      origin="166, 105"
-		      size="28, 232"
+		      origin="167, 108"
+		      size="25, 226"
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
