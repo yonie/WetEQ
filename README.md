@@ -18,14 +18,15 @@ The bells take their bandwidth from the boost/cut pot damping a gyrator tank, so
 Q rises with boost the way it does on the hardware. That is why there is no Q
 control on the panel.
 
-There are eleven controls and all of them are stepped, nine positions each. You
-cannot nudge this EQ by 0.4 dB, which is the point.
+All eleven controls are stepped, nine positions each. The smallest move
+available on a band is 3.75 dB, which is coarse on purpose: it is the same
+reasoning behind WetDelay's six fixed delay times.
 
 ## Sound
 
 With everything out of circuit the response is within ±0.1 dB from 20 Hz to
-20 kHz. Nothing is resampled, quantised or band-limited, so an inserted WetEQ
-does nothing at all until you turn a control.
+20 kHz. Nothing is resampled, quantised or band-limited, so the plugin
+is inaudible until you turn a control.
 
 GAIN sits ahead of the equaliser and drives the input amplifier. It is not
 makeup gain and is not compensated at the output: clean at the centre detent,
@@ -55,7 +56,8 @@ or 125%.
 
 ## Install
 
-Grab the latest release. One download covers every platform.
+Download the latest release from the [Releases page](https://github.com/yonie/WetEQ/releases).
+One download covers every platform.
 
 | | |
 |---|---|
@@ -121,10 +123,13 @@ sudo apt-get install cmake gcc g++ libstdc++6 libx11-xcb-dev libxcb-util-dev \
 
 The build runs the official Steinberg VST3 validator: 47 tests, all passing.
 
-`tools/eqtest.cpp` measures the DSP with no plugin and no host — resolved knob
-values against the panel legends, every band at its own centre, the
-gain/bandwidth relationship, the noise floor, and that no control clicks when
-you move it.
+`tools/eqtest.cpp` measures the DSP directly, with no plugin and no host:
+
+- resolved knob values against the legends printed on the panel
+- every band measured at its own centre frequency
+- the relationship between boost and bandwidth
+- the noise floor
+- that no control clicks when you move it
 
 ```
 tools/build-eqtest.bat
@@ -132,7 +137,18 @@ tools/build-eqtest.bat
 
 ## Licence
 
-MIT. Free, no copy protection, no activation, no account, no launcher app.
+MIT Licence — Copyright © 2026 Ronald Klarenbeek (Yonie). See [LICENSE](LICENSE)
+for the full text.
+
+The VST3 SDK is licensed separately, under a BSD-style licence. See the SDK's own
+licence files.
+
+## Author
+
+**Ronald Klarenbeek**
+- Website: [https://wetvst.com](https://wetvst.com)
+- Email: contact@wetvst.com
+- GitHub: [https://github.com/yonie](https://github.com/yonie)
 
 ---
 
