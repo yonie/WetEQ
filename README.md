@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" markdown="1">
 
 # WetEQ
 
@@ -142,7 +142,7 @@ MIT. Free, no copy protection, no activation, no account, no launcher app.
 
 ---
 
-<div align="center">
+<div align="center" markdown="1">
 
 Part of **[WET](https://wetvst.com)** — with [WetDelay](https://github.com/yonie/WetDelay) and [WetReverb](https://github.com/yonie/WetReverb)
 
