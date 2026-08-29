@@ -1,18 +1,12 @@
-<div align="center" markdown="1">
-
 # WetEQ
-
-**A four-band console equaliser with the saturation, crosstalk and gain-dependent Q of a large-format desk.**
 
 ![VST3](https://img.shields.io/badge/VST3-Windows%20·%20macOS%20·%20Linux-blue)
 ![Licence](https://img.shields.io/badge/licence-MIT-green)
 ![Price](https://img.shields.io/badge/price-free-brightgreen)
 
-<img src="docs/panel.png" width="380" alt="WetEQ">
+A four-band console equaliser with the saturation, crosstalk and gain-dependent Q of a large-format desk.
 
-</div>
-
----
+![WetEQ panel](docs/panel.png)
 
 ## What it is
 
@@ -142,8 +136,4 @@ MIT. Free, no copy protection, no activation, no account, no launcher app.
 
 ---
 
-<div align="center" markdown="1">
-
 Part of **[WET](https://wetvst.com)** — with [WetDelay](https://github.com/yonie/WetDelay) and [WetReverb](https://github.com/yonie/WetReverb)
-
-</div>
