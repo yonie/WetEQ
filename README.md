@@ -2,7 +2,7 @@
 
 # WetEQ
 
-**A four-band console equaliser with stepped controls and no Q knob.**
+**A four-band console equaliser with the saturation, crosstalk and gain-dependent Q of a large-format desk.**
 
 ![VST3](https://img.shields.io/badge/VST3-Windows%20·%20macOS%20·%20Linux-blue)
 ![Licence](https://img.shields.io/badge/licence-MIT-green)
@@ -88,16 +88,44 @@ would rather build it yourself.
 
 ## Build it yourself
 
-Needs CMake and a C++17 compiler. The Steinberg VST3 SDK is pulled in as a
-submodule.
+### Prerequisites
 
-```
-git clone --recursive https://github.com/yonie/WetEQ.git
-cd WetEQ
-./build.sh          # or build.bat on Windows
+**Windows**
+- Visual Studio 2022 Build Tools or Community Edition
+- CMake 3.15 or higher, Git
+
+**Linux (Ubuntu/Debian)**
+```bash
+sudo apt-get install cmake gcc g++ libstdc++6 libx11-xcb-dev libxcb-util-dev \
+    libxcb-cursor-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev \
+    libfontconfig1-dev libcairo2-dev libgtkmm-3.0-dev libsqlite3-dev \
+    libxcb-keysyms1-dev git
 ```
 
-The build runs the Steinberg validator: 47 tests, all passing.
+**macOS**
+- Xcode Command Line Tools: `xcode-select --install`
+- CMake 3.15+ (`brew install cmake`)
+
+### Build steps
+
+1. **Clone, then clone the VST3 SDK inside it:**
+   ```bash
+   git clone https://github.com/yonie/WetEQ.git
+   cd WetEQ
+   git clone --recursive https://github.com/steinbergmedia/vst3sdk.git
+   ```
+
+2. **Build:**
+   - Windows: `build.bat`
+   - Linux/macOS: `chmod +x build.sh && ./build.sh`
+
+3. **Install:**
+   - Windows: `install.bat`
+   - Linux/macOS: `chmod +x install.sh && ./install.sh`
+
+### Validation
+
+The build runs the official Steinberg VST3 validator: 47 tests, all passing.
 
 `tools/eqtest.cpp` measures the DSP with no plugin and no host — resolved knob
 values against the panel legends, every band at its own centre, the
