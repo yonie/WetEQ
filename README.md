@@ -66,11 +66,25 @@ Grab the latest release. One download covers every platform.
 | | |
 |---|---|
 | **Windows** | copy `WetEQ.vst3` to `C:\Program Files\Common Files\VST3\` |
-| **macOS** | copy `WetEQ.vst3` to `/Library/Audio/Plug-Ins/VST3/` |
+| **macOS** | copy `WetEQ.vst3` to `~/Library/Audio/Plug-Ins/VST3/` |
 | **Linux** | copy `WetEQ.vst3` to `~/.vst3/` |
 
 Rescan for plugins in your DAW. Intel and Apple Silicon are both in the macOS
 build.
+
+### macOS needs one more step
+
+The build is unsigned, so macOS quarantines it and reports that the developer
+cannot be verified. That does not mean the plugin is unsafe. Clear the flag
+before you rescan:
+
+```bash
+xattr -cr ~/Library/Audio/Plug-Ins/VST3/WetEQ.vst3
+```
+
+Notarising a build means enrolling in the Apple Developer Program at $99 a year,
+which a free MIT plugin does not pay for. The full source is in this repo if you
+would rather build it yourself.
 
 ## Build it yourself
 
