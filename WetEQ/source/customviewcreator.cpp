@@ -13,6 +13,8 @@ namespace Yonie {
 static const std::string kAttrNumSegments = "num-segments";
 static const std::string kAttrSegmentGap  = "segment-gap";
 static const std::string kAttrHorizontal  = "horizontal";
+static const std::string kAttrDbMin       = "db-min";
+static const std::string kAttrDbMax       = "db-max";
 static const std::string kAttrStepCount   = "step-count";
 
 //------------------------------------------------------------------------
@@ -47,6 +49,11 @@ bool LEDMeterViewCreator::apply(CView* view, const UIAttributes& attributes,
     if (attributes.getBooleanAttribute(kAttrHorizontal, boolValue))
         meter->setHorizontal(boolValue);
 
+    double lo = 0.0, hi = 0.0;
+    if (attributes.getDoubleAttribute(kAttrDbMin, lo) &&
+        attributes.getDoubleAttribute(kAttrDbMax, hi))
+        meter->setDbRange(lo, hi);
+
     return true;
 }
 
@@ -55,6 +62,8 @@ bool LEDMeterViewCreator::getAttributeNames(StringList& names) const
     names.emplace_back(kAttrNumSegments);
     names.emplace_back(kAttrSegmentGap);
     names.emplace_back(kAttrHorizontal);
+    names.emplace_back(kAttrDbMin);
+    names.emplace_back(kAttrDbMax);
     return true;
 }
 
@@ -63,6 +72,8 @@ IViewCreator::AttrType LEDMeterViewCreator::getAttributeType(const string& name)
     if (name == kAttrNumSegments) return kIntegerType;
     if (name == kAttrSegmentGap)  return kFloatType;
     if (name == kAttrHorizontal)  return kBooleanType;
+    if (name == kAttrDbMin)       return kFloatType;
+    if (name == kAttrDbMax)       return kFloatType;
     return kUnknownType;
 }
 

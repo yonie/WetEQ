@@ -44,6 +44,8 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
+		      db-min="-48"
+		      db-max="18"
 		      transparent="false"/>
 
 		<view class="LEDMeterView"
@@ -53,6 +55,8 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
+		      db-min="-48"
+		      db-max="18"
 		      transparent="false"/>
 
 		<view class="LEDMeterView"
@@ -62,6 +66,8 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
+		      db-min="-48"
+		      db-max="18"
 		      transparent="false"/>
 
 		<view class="LEDMeterView"
@@ -71,6 +77,8 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
+		      db-min="-48"
+		      db-max="18"
 		      transparent="false"/>
 
 		<!-- Stepped knobs. One filmstrip frame per detent, so the frame
