@@ -5,9 +5,9 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 ![Version](https://img.shields.io/badge/version-1.0.0-orange)
 
-A four-band console equaliser VST3 plugin, modelled as a circuit rather than as a
-frequency response, with the saturation, crosstalk and gain-dependent bandwidth of
-a large-format desk.
+A four-band British console equaliser VST3 plugin, modelled as a circuit rather
+than as a frequency response, with the saturation, crosstalk and gain-dependent
+bandwidth of a large-format desk.
 
 ![WetEQ Plugin Screenshot](docs/panel.png)
 
@@ -375,6 +375,13 @@ tools/build-eqtest.bat
 - Website: [https://wetvst.com](https://wetvst.com)
 - Email: contact@wetvst.com
 - GitHub: [https://github.com/yonie](https://github.com/yonie)
+
+## Trademarks
+
+All product names, trademarks and registered trademarks are property of their
+respective owners, and any reference to them here describes only the kind of
+equipment this plugin was inspired by. No manufacturer has endorsed, sponsored
+or licensed this plugin, and no third-party intellectual property is used in it.
 
 ## License
 
