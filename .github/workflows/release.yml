@@ -187,20 +187,37 @@ jobs:
           files: WetEQ-${{ github.ref_name }}.zip
           generate_release_notes: true
           draft: false
-          # NOTE: this body is hardcoded and does NOT update itself. It has
-          # already lagged a release behind once on WetDelay. Rewrite it before
-          # every tag.
+          # NOTE: this body is hardcoded and does NOT update itself. Rewrite the
+          # description before every tag - it has lagged a release behind before.
+          # The Installation block below is REQUIRED and stays: people land on the
+          # release page from an aggregator with no idea what to do with a .vst3.
           body: |
-            **WetEQ 1.0.0 — first release**
+            **WetEQ 1.0.0 - first release**
 
-            A four-band console equaliser with stepped controls: nine positions
-            per knob, and no Q control.
+            A four-band console equaliser with the saturation, crosstalk and gain-dependent
+            Q of a large-format desk. Eleven stepped controls, nine positions each.
 
-            With every control out of circuit the response is within plus or
-            minus 0.1 dB from 20 Hz to 20 kHz. GAIN drives the input amplifier
-            rather than trimming the output, so it colours as you push it.
+            With every control out of circuit the response is within plus or minus 0.1 dB
+            from 20 Hz to 20 kHz. GAIN drives the input amplifier rather than trimming the
+            output, so it colours as you push it.
 
             Windows, macOS (Intel and Apple Silicon) and Linux in one download.
-            Free, MIT licensed, no copy protection.
+
+            ### Installation
+
+            First, download the ZIP (see Assets below).
+
+            **Windows**: Extract to `C:\Program Files\Common Files\VST3\`
+
+            **Linux**: Extract to `~/.vst3/` or `/usr/lib/vst3/`
+
+            **macOS**:
+            1. Extract to `~/Library/Audio/Plug-Ins/VST3/`
+            2. Run: `xattr -cr ~/Library/Audio/Plug-Ins/VST3/WetEQ.vst3`
+            3. The plugin is unsigned, so macOS quarantines it. That does not mean it is unsafe.
+
+            Restart your DAW and rescan for plugins.
+
+            See the [README](https://github.com/yonie/WetEQ/blob/main/README.md) for full details.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
