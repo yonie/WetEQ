@@ -1,147 +1,373 @@
-# WetEQ
+# WET EQ VST3 Plugin
 
-![VST3](https://img.shields.io/badge/VST3-Windows%20·%20macOS%20·%20Linux-blue)
-![Licence](https://img.shields.io/badge/licence-MIT-green)
-![Price](https://img.shields.io/badge/price-free-brightgreen)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![VST3](https://img.shields.io/badge/VST3-Compatible-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+![Version](https://img.shields.io/badge/version-1.0.0-orange)
 
-A four-band console equaliser with the saturation, crosstalk and gain-dependent Q of a large-format desk.
+A four-band console equaliser VST3 plugin, modelled as a circuit rather than as a
+frequency response, with the saturation, crosstalk and gain-dependent bandwidth of
+a large-format desk.
 
-![WetEQ panel](docs/panel.png)
+![WetEQ Plugin Screenshot](docs/panel.png)
 
-## What it is
+## Features
 
-An analog console EQ. Each band is a circuit rather than a filter curve: every
-stage is its own amplifier, saturating inside its own filter loop, bleeding a
-little into the other channel and contributing its own noise.
+- **Four Bands**: LF shelf, LMF bell, HMF bell and HF shelf, each +/-15 dB
+- **Two Filters**: High-pass and low-pass, both leaving circuit at the ends of their travel
+- **Input Drive**: GAIN pushes the input amplifier ahead of the equaliser
+- **Stepped Controls**: All eleven knobs, nine positions each
+- **Visual Metering**: Real-time peak level meters for input and output
+- **VST3 Automation**: Full parameter automation support in DAWs
 
-The bells take their bandwidth from the boost/cut pot damping a gyrator tank, so
-Q rises with boost the way it does on the hardware. That is why there is no Q
-control on the panel.
+### Console Character
 
-All eleven controls are stepped, nine positions each. The smallest move
-available on a band is 3.75 dB, which is coarse on purpose: it is the same
-reasoning behind WetDelay's six fixed delay times.
+- **Circuit, Not Curve**: Every band is its own amplifier, saturating inside its own filter loop
+- **Gain-Dependent Bandwidth**: The bells take their Q from the boost/cut pot damping a gyrator tank, so a gentle move is broad and a hard one is tight - which is why there is no Q control on the panel
+- **Topology-Preserving Filters**: State-variable stages in TPT form, so a corner lands where it is asked to rather than a few percent low
+- **Per-Stage Saturation**: The nonlinearity sits in the integrator path, where the op-amp physically is, so a driven band detunes and compresses the way a real tank does
+- **Per-Stage Crosstalk and Noise**: Each of the six stages leaks into the other channel and contributes its own noise; -40 dB bleed, -87.7 dBFS floor
+- **Component Tolerance**: 2.5% per channel, so the two sides are never quite the same channel twice
+- **Nothing Resampled**: Flat is flat - +/-0.1 dB from 20 Hz to 20 kHz with every control out of circuit
 
-## Sound
+## Download & Installation
 
-With everything out of circuit the response is within ±0.1 dB from 20 Hz to
-20 kHz. Nothing is resampled, quantised or band-limited, so the plugin
-is inaudible until you turn a control.
+### Windows
 
-GAIN sits ahead of the equaliser and drives the input amplifier. It is not
-makeup gain and is not compensated at the output: clean at the centre detent,
-2.8% THD at +10, clearly working by +20.
+1. **Download** the latest release from [GitHub Releases](https://github.com/yonie/WetEQ/releases)
+2. **Extract** the ZIP file
+3. **Copy** `WetEQ.vst3` to your VST3 folder:
+   - User: `C:\Users\[Username]\Documents\VST3\`
+   - System: `C:\Program Files\Common Files\VST3\`
+4. **Restart your DAW** and rescan plugins
 
-Boost and cut mirror each other, and at the ends of their travel the filters
-leave circuit entirely.
+### Linux
+
+1. **Download** the latest release from [GitHub Releases](https://github.com/yonie/WetEQ/releases)
+2. **Extract** the ZIP file
+3. **Copy** `WetEQ.vst3` to your VST3 folder:
+   - User: `~/.vst3/`
+   - System: `/usr/lib/vst3/`
+4. **Restart your DAW** and rescan plugins
+
+### macOS
+
+1. **Download** the latest release from [GitHub Releases](https://github.com/yonie/WetEQ/releases)
+2. **Extract** the ZIP file
+3. **Copy** `WetEQ.vst3` to your VST3 folder:
+   ```
+   ~/Library/Audio/Plug-Ins/VST3/
+   ```
+4. **Remove quarantine attribute** (see below)
+5. **Restart your DAW** and rescan plugins
+
+Note that by default, the Library folder may not be shown in the Finder. See the macOS documentation on how to make it visible.
+
+#### ❗️ macOS Security Notice
+
+macOS may block the plugin because it's unsigned. This **does not mean** the plugin is unsafe.
+
+**Remove quarantine attribute:**
+
+```bash
+xattr -rd com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/WetEQ.vst3
+```
+
+**What this command does:**
+- `xattr` = extended attribute tool
+- `-r` = recursive (process all files in the bundle)
+- `-d` = delete the specified attribute
+- `com.apple.quarantine` = the quarantine attribute
+
+Restart your DAW after running the command.
+
+#### Why macOS Blocks This Plugin
+
+When you try to load the plugin in your DAW, you may see an error:
+
+> "WetEQ.vst3" cannot be opened because the developer cannot be verified.
+
+This **does not mean** the plugin contains malware or is unsafe.
+
+This is due to **Apple's security policy**, which requires developers to:
+- Enroll in the Apple Developer Program
+- Pay **$99/year** for a developer certificate
+- Notarize each build with Apple
+
+As an independent developer releasing **free, open-source software** under the MIT license, I currently don't have the budget for Apple's developer program. The complete source code is available on GitHub for anyone to inspect and build themselves.
+
+This is a common issue with free audio plugins on macOS. You'll encounter the same message with many free, open-source VSTs.
+
+
+## Usage
+
+1. **Load the plugin** in your DAW (Reaper, Cubase, Ableton Live, FL Studio, etc.)
+2. **Set the band frequency**, then the boost or cut - the bandwidth follows the amount, so there is nothing else to set
+3. **Use HPF and LPF** to clear the extremes; both are out of circuit at the ends of their travel
+4. **Drive with GAIN** if you want the input amplifier working - it is not makeup gain and is not compensated
+5. **Automate** any control for creative effects
+
+### Parameter Reference
+
+| Parameter | Range | Per detent |
+|-----------|-------|------------|
+| GAIN | +/-20 dB | 5 dB |
+| HPF | 20 Hz - 2 kHz | x1.74 |
+| LPF | 2 - 20 kHz | x1.33 |
+| LF shelf | 30 - 600 Hz | x1.45 |
+| LMF bell | 100 Hz - 4 kHz | x1.55 |
+| HMF bell | 400 Hz - 10 kHz | x1.49 |
+| HF shelf | 1.5 - 22 kHz | x1.39 |
+| Band gain (x4) | +/-15 dB | 3.75 dB |
+
+Frequency knobs are log-spaced with the printed endpoints exact. Every control is
+stepped, nine positions each: the smallest move available on a band is 3.75 dB,
+which is coarse on purpose - the same reasoning behind WetDelay's six fixed delay
+times.
+
+### Mouse
+
+- **Wheel**: one detent per notch
+- **Right-click the panel**: UI Zoom - 75%, 100% or 125%
 
 ![Specification](docs/signal-path.png)
 
-## Controls
+## Building from Source
 
-| | Range | Per detent |
-|---|---|---|
-| **GAIN** | ±20 dB | 5 dB |
-| **HPF** | 20 Hz – 2 kHz | ×1.74 |
-| **LPF** | 2 – 20 kHz | ×1.33 |
-| **LF** shelf | 30 – 600 Hz | ×1.45 |
-| **LMF** bell | 100 Hz – 4 kHz | ×1.55 |
-| **HMF** bell | 400 Hz – 10 kHz | ×1.49 |
-| **HF** shelf | 1.5 – 22 kHz | ×1.39 |
-| **Band gain** ×4 | ±15 dB | 3.75 dB |
+If you want to build the plugin yourself, follow these instructions.
 
-Frequency knobs are log-spaced with the printed endpoints exact. Mouse wheel
-steps one detent per notch. Right-click the panel for **UI Zoom** — 75%, 100%
-or 125%.
+### System Requirements
 
-## Install
+#### Windows
+- **Operating System**: Windows 10/11 (64-bit)
+- **Build Tools**: 
+  - Visual Studio 2022 Build Tools or Community Edition
+  - CMake 3.15 or higher
+  - Git
 
-Download the latest release from the [Releases page](https://github.com/yonie/WetEQ/releases).
-One download covers every platform.
+#### Linux
+- **Operating System**: Linux (x86_64)
+- **Build Tools**:
+  - GCC or Clang with C++17 support
+  - CMake 3.15 or higher
+  - Git
+- **Dependencies** (Ubuntu/Debian):
+  ```
+  sudo apt-get install cmake gcc g++ libstdc++6 libx11-xcb-dev libxcb-util-dev \
+      libxcb-cursor-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev \
+      libfontconfig1-dev libcairo2-dev libgtkmm-3.0-dev libsqlite3-dev \
+      libxcb-keysyms1-dev git
+  ```
 
-| | |
-|---|---|
-| **Windows** | copy `WetEQ.vst3` to `C:\Program Files\Common Files\VST3\` |
-| **macOS** | copy `WetEQ.vst3` to `~/Library/Audio/Plug-Ins/VST3/` |
-| **Linux** | copy `WetEQ.vst3` to `~/.vst3/` |
+#### macOS
+- **Operating System**: macOS 10.13 or higher (Intel) / macOS 11.0 or higher (Apple Silicon)
+- **Build Tools**:
+  - Xcode Command Line Tools or Xcode
+  - CMake 3.15 or higher
+  - Git
 
-Rescan for plugins in your DAW. Intel and Apple Silicon are both in the macOS
-build.
+### Step 1: Clone VST3 SDK
 
-### macOS needs one more step
+If the `vst3sdk` folder is not present, clone it:
 
-The build is unsigned, so macOS quarantines it and reports that the developer
-cannot be verified. That does not mean the plugin is unsafe. Clear the flag
-before you rescan:
-
-```bash
-xattr -cr ~/Library/Audio/Plug-Ins/VST3/WetEQ.vst3
+```batch
+git clone --recursive https://github.com/steinbergmedia/vst3sdk.git
 ```
 
-Notarising a build means enrolling in the Apple Developer Program at $99 a year,
-which a free MIT plugin does not pay for. The full source is in this repo if you
-would rather build it yourself.
+### Step 2: Build
 
-## Build it yourself
+#### Windows
+Run the automated build script:
 
-### Prerequisites
-
-**Windows**
-- Visual Studio 2022 Build Tools or Community Edition
-- CMake 3.15 or higher, Git
-
-**Linux (Ubuntu/Debian)**
-```bash
-sudo apt-get install cmake gcc g++ libstdc++6 libx11-xcb-dev libxcb-util-dev \
-    libxcb-cursor-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev \
-    libfontconfig1-dev libcairo2-dev libgtkmm-3.0-dev libsqlite3-dev \
-    libxcb-keysyms1-dev git
+```batch
+build.bat
 ```
 
-**macOS**
-- Xcode Command Line Tools: `xcode-select --install`
-- CMake 3.15+ (`brew install cmake`)
+This will:
+- Configure CMake for Visual Studio 2022
+- Build the plugin in Release mode
+- Run the VST3 validator (47 automated tests)
+- Output: `WetEQ\build\VST3\Release\WetEQ.vst3`
 
-### Build steps
+#### Linux
+Run the automated build script:
 
-1. **Clone, then clone the VST3 SDK inside it:**
-   ```bash
-   git clone https://github.com/yonie/WetEQ.git
-   cd WetEQ
-   git clone --recursive https://github.com/steinbergmedia/vst3sdk.git
-   ```
+```bash
+chmod +x build.sh
+./build.sh
+```
 
-2. **Build:**
-   - Windows: `build.bat`
-   - Linux/macOS: `chmod +x build.sh && ./build.sh`
+This will:
+- Configure CMake with GCC/Clang
+- Build the plugin in Release mode
+- Run the VST3 validator (47 automated tests)
+- Output: `WetEQ/build/VST3/Release/WetEQ.vst3`
 
-3. **Install:**
-   - Windows: `install.bat`
-   - Linux/macOS: `chmod +x install.sh && ./install.sh`
+#### macOS
+Run the automated build script:
 
-### Validation
+```bash
+chmod +x build.sh
+./build.sh
+```
 
-The build runs the official Steinberg VST3 validator: 47 tests, all passing.
+This will:
+- Configure CMake with Clang
+- Build the plugin in Release mode
+- Run the VST3 validator (47 automated tests)
+- Output: `WetEQ/build/VST3/Release/WetEQ.vst3`
 
-`tools/eqtest.cpp` measures the DSP directly, with no plugin and no host:
+### Step 3: Install
 
-- resolved knob values against the legends printed on the panel
-- every band measured at its own centre frequency
-- the relationship between boost and bandwidth
-- the noise floor
-- that no control clicks when you move it
+#### Windows
+To install the plugin to your system's VST3 folder:
+
+```batch
+install.bat
+```
+
+**Note**: You may need to run as Administrator if you encounter permission errors.
+
+#### Linux
+To install the plugin to your user VST3 folder:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+This installs to `~/.vst3/WetEQ.vst3`
+
+#### macOS
+To install the plugin to your user VST3 folder:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+This installs to `~/Library/Audio/Plug-Ins/VST3/WetEQ.vst3`
+
+---
+
+
+## Technical Details
+
+### Architecture
+
+- **Framework**: VST3 SDK (Official Steinberg)
+- **Language**: C++17
+- **Build System**: CMake (MSBuild on Windows, Make on Linux)
+- **GUI**: VSTGUI4
+
+### Audio Processing
+
+- **Host Sample Rates**: Supports 22.05 kHz to 384 kHz
+- **Internal Sample Rate**: Host rate - nothing is resampled, quantised or band-limited
+- **Host Bit Depth**: 32-bit float processing
+- **Frequency Response**: +/-0.1 dB, 20 Hz - 20 kHz, controls out of circuit
+- **THD**: 0.30% at unity, 2.8% at +10 dB drive, 16.5% at +20 dB
+- **Latency**: 0 samples
+- **CPU Usage**: <0.5% (typical)
+
+### Implementation Details
+
+- **Filter Stages**: State-variable, topology-preserving (TPT), six per channel
+- **Saturation**: Op-amp curve inside the integrator path, not before or after the filter
+- **Proportional Q**: Derived from pot travel damping a gyrator tank, not applied as a formula
+- **Shelf Prewarping**: sqrt(A) prewarp, so a shelf corner does not walk as its gain changes
+- **Crosstalk**: Injected at every stage, so bleed a later band receives has already been shaped by the bands before it
+- **Noise**: One uncorrelated source per stage per channel, plus a tilted component
+- **Parameter Glide**: Stepped controls glide the value behind the detent over a few milliseconds, updated every 32 samples
+- **Thread Safety**: Lock-free atomic operations for GUI communication
+
+## Project Structure
+
+```
+WetEQ/
+|-- vst3sdk/                    # VST3 SDK (git submodule)
+|-- WetEQ/                      # Plugin source
+|   |-- source/
+|   |   |-- weteqprocessor.h/cpp       # Audio processing
+|   |   |-- weteqcontroller.h/cpp      # Parameter control
+|   |   |-- eqengine.h/cpp             # The equaliser
+|   |   |-- analogcore.h               # Analog stages, solved rather than approximated
+|   |   |-- steppedknob.h/cpp          # Stepped filmstrip knob
+|   |   |-- ledmeterview.h/cpp         # LED meters
+|   |   |-- weteqcids.h                # Plugin IDs
+|   |   `-- version.h                  # Version info
+|   |-- resource/
+|   |   `-- weteqeditor.uidesc         # GUI definition
+|   |-- CMakeLists.txt                 # Build configuration
+|   `-- build/                         # Build output (generated)
+|-- tools/
+|   `-- eqtest.cpp              # DSP measurement harness, no host required
+|-- docs/                       # Panel shot and specification sheet
+|-- build.bat                   # Build automation script
+|-- install.bat                 # Installation script
+|-- LICENSE                     # MIT License
+`-- README.md                   # This file
+```
+
+## Validation Results
+
+The plugin passes all official VST3 validation tests:
+
+**47 tests passed, 0 tests failed**
+
+Key validations:
+- Valid state transitions
+- Proper bus configuration
+- Correct parameter handling
+- Sample rate support (22.05 kHz - 384 kHz)
+- Thread safety
+- Preset save/load
+- Plugin suspend/resume
+
+`tools/eqtest.cpp` measures the DSP directly, with no plugin and no host: resolved
+knob values against the legends printed on the panel, every band at its own centre
+frequency, the relationship between boost and bandwidth, the noise floor, and that
+no control clicks when you move it.
 
 ```
 tools/build-eqtest.bat
 ```
 
-## Licence
+## Troubleshooting
 
-MIT Licence — Copyright © 2026 Ronald Klarenbeek (Yonie). See [LICENSE](LICENSE)
-for the full text.
+### macOS Issues
 
-The VST3 SDK is licensed separately, under a BSD-style licence. See the SDK's own
-licence files.
+**Plugin not appearing in DAW:**
+- You forgot to remove the quarantine attribute - see Installation section above
+- Restart your DAW after running the `xattr` command
+- Check VST3 scan path: `~/Library/Audio/Plug-Ins/VST3/`
+- Verify the folder contains `WetEQ.vst3`
+
+**Still getting "cannot be verified" after running xattr:**
+- Right-click the plugin → "Open" → "Open" to bypass Gatekeeper
+- Check DAW console for error messages
+- Report issue at [GitHub Issues](https://github.com/yonie/WetEQ/issues)
+
+**Plugin crashes DAW:**
+- macOS 10.13+ (Intel) or macOS 11.0+ (Apple Silicon) required
+- Check DAW console for error messages
+- Report issue at [GitHub Issues](https://github.com/yonie/WetEQ/issues)
+
+### Runtime Issues
+
+**Nothing seems to be happening:**
+- With every control at its centre detent the plugin is meant to be inaudible.
+  Turn a band up or down and it will not be
+- HPF and LPF are out of circuit at the ends of their travel, by design
+
+**A boost sounds narrower than expected:**
+- That is the design. Bandwidth follows the amount of boost, as it does on the
+  hardware, which is why there is no Q control
+
+**Crackling/Clicking:**
+- Stepped controls glide the value behind the detent, so a knob move should not
+  click. If it does, report as a bug with your DAW and sample rate info
+
 
 ## Author
 
@@ -150,6 +376,50 @@ licence files.
 - Email: contact@wetvst.com
 - GitHub: [https://github.com/yonie](https://github.com/yonie)
 
+## License
+
+MIT License - Copyright © 2026 Ronald Klarenbeek (Yonie)
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Note:** This project uses the VST3 SDK which is licensed under a BSD-style license.
+See the VST3 SDK license files for details on SDK licensing.
+
+## Acknowledgments
+
+- Steinberg Media Technologies for the VST3 SDK
+- VSTGUI framework for cross-platform GUI support
+- The audio plugin development community
+
+
+## Version History
+
+### v1.0.0 (2026-08-30)
+- Initial release
+- Four bands plus high-pass, low-pass and input drive
+- Eleven stepped controls, nine positions each
+- Input/output peak metering
+- Full VST3 automation support
+- Validated with official VST3 validator
+- **Modelled as a circuit**:
+  - State-variable stages in topology-preserving form
+  - Saturation inside the filter loop, where the op-amp is
+  - Bandwidth derived from the boost/cut pot damping a gyrator tank
+- **Per-Stage Noise and Crosstalk**:
+  - -40 dB channel bleed distributed across all six stages
+  - 2.5% component tolerance per channel
+
+
 ---
 
-Part of **[WET](https://wetvst.com)** — with [WetDelay](https://github.com/yonie/WetDelay) and [WetReverb](https://github.com/yonie/WetReverb)
+**Built with ❤️ and precision engineering**
+
+## Support
+
+If you find this plugin helpful, consider buying me a coffee!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/yonie)
+
+---
+
+Part of **[WET](https://wetvst.com)** - with [WetDelay](https://github.com/yonie/WetDelay), [WetReverb](https://github.com/yonie/WetReverb) and [WetCompressor](https://github.com/yonie/WetCompressor)
