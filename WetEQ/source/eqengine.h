@@ -41,7 +41,7 @@ namespace EQRange {
 // Every knob has NINE positions, because the panel art paints nine tick dots
 // around each one. Odd, so the centre detent is a real position: 0 dB on the
 // gain knobs, and unity is reachable. A band you cannot defeat is a defect
-// rather than a constraint, and real SSL gain pots have a centre detent.
+// rather than a constraint, and real console gain pots have a centre detent.
 //
 // All three counts are deliberately the same number. If one ever diverges the
 // pointer stops landing on a painted dot, which is what happened when the

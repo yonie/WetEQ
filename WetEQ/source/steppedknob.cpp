@@ -83,7 +83,7 @@ void SteppedKnob::onMouseWheelEvent(MouseWheelEvent& event)
     //
     // WHEEL UP = CLOCKWISE. Scrolling up raises the value, and the filmstrip
     // runs from minimum at -135 deg to maximum at +135 deg, so a rising value
-    // turns the pointer clockwise. Matches the Waves SSL plugins.
+    // turns the pointer clockwise, as every console-style plugin does.
     const double dy = event.deltaY;
     int detents = 0;
     if (dy > 0.0)      detents =  1;
