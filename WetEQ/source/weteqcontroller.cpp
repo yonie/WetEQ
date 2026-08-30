@@ -165,10 +165,14 @@ tresult PLUGIN_API WetEQController::initialize(FUnknown* context)
     addSteppedFreq(kLFFreqParam, u"LF Freq", kFreqSteps, kLFMin, kLFMax, kFreqSteps / 2);
 
     // Meter feeds. Read-only so a host never tries to automate them.
-    parameters.addParameter(STR16("Input Meter"), nullptr, 0, 0,
-                            Vst::ParameterInfo::kIsReadOnly, kInputMeter);
-    parameters.addParameter(STR16("Output Meter"), nullptr, 0, 0,
-                            Vst::ParameterInfo::kIsReadOnly, kOutputMeter);
+    parameters.addParameter(STR16("Input Meter L"), nullptr, 0, 0,
+                            Vst::ParameterInfo::kIsReadOnly, kInputMeterL);
+    parameters.addParameter(STR16("Input Meter R"), nullptr, 0, 0,
+                            Vst::ParameterInfo::kIsReadOnly, kInputMeterR);
+    parameters.addParameter(STR16("Output Meter L"), nullptr, 0, 0,
+                            Vst::ParameterInfo::kIsReadOnly, kOutputMeterL);
+    parameters.addParameter(STR16("Output Meter R"), nullptr, 0, 0,
+                            Vst::ParameterInfo::kIsReadOnly, kOutputMeterR);
 
     return result;
 }

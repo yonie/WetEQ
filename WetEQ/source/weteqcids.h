@@ -38,12 +38,15 @@ enum WetEQParams : Steinberg::Vst::ParamID
     kLFGainParam  = 9,
     kLFFreqParam  = 10,   // 30 Hz .. 600 Hz
 
-    // Output-only, for the two LED strips. The panel shows one IN and one OUT
-    // meter, so each follows the louder of the two channels.
-    kInputMeter   = 11,
-    kOutputMeter  = 12,
+    // Output-only, for the LED strips. Each bus has a left and a right column,
+    // so an imbalance between the channels is visible instead of being hidden
+    // behind a max() of the two.
+    kInputMeterL  = 11,
+    kInputMeterR  = 12,
+    kOutputMeterL = 13,
+    kOutputMeterR = 14,
 
-    kParamCount   = 13
+    kParamCount   = 15
 };
 
 //------------------------------------------------------------------------

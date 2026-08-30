@@ -50,10 +50,14 @@ tresult PLUGIN_API WetEQProcessor::setActive(TBool state)
     if (state)
     {
         engine.reset();
-        inputPeak = 0.0f;
-        outputPeak = 0.0f;
-        oldInputMeter = 0.0f;
-        oldOutputMeter = 0.0f;
+        inputPeakL = 0.0f;
+        inputPeakR = 0.0f;
+        outputPeakL = 0.0f;
+        outputPeakR = 0.0f;
+        oldInputMeterL = 0.0f;
+        oldInputMeterR = 0.0f;
+        oldOutputMeterL = 0.0f;
+        oldOutputMeterR = 0.0f;
     }
     return AudioEffect::setActive(state);
 }
@@ -157,12 +161,18 @@ tresult PLUGIN_API WetEQProcessor::process(Vst::ProcessData& data)
     float* outR = output.channelBuffers32[1];
 
     for (int32 i = 0; i < data.numSamples; ++i)
-        updatePeak(std::max(std::abs(inL[i]), std::abs(inR[i])), inputPeak);
+    {
+        updatePeak(std::abs(inL[i]), inputPeakL);
+        updatePeak(std::abs(inR[i]), inputPeakR);
+    }
 
     engine.processStereo(inL, inR, outL, outR, data.numSamples);
 
     for (int32 i = 0; i < data.numSamples; ++i)
-        updatePeak(std::max(std::abs(outL[i]), std::abs(outR[i])), outputPeak);
+    {
+        updatePeak(std::abs(outL[i]), outputPeakL);
+        updatePeak(std::abs(outR[i]), outputPeakR);
+    }
 
     //--- meters -----------------------------------------------------------
     // Same scheme as WetDelay: push through outputParameterChanges only when
@@ -184,8 +194,10 @@ tresult PLUGIN_API WetEQProcessor::process(Vst::ProcessData& data)
             }
         };
 
-        sendMeter(kInputMeter, inputPeak.load(), oldInputMeter);
-        sendMeter(kOutputMeter, outputPeak.load(), oldOutputMeter);
+        sendMeter(kInputMeterL, inputPeakL.load(), oldInputMeterL);
+        sendMeter(kInputMeterR, inputPeakR.load(), oldInputMeterR);
+        sendMeter(kOutputMeterL, outputPeakL.load(), oldOutputMeterL);
+        sendMeter(kOutputMeterR, outputPeakR.load(), oldOutputMeterR);
     }
 
     output.silenceFlags = 0;

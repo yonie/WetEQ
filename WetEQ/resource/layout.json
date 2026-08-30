@@ -140,9 +140,9 @@
     }
   },
   "meters": {
-    "kInputMeter": {
+    "kInputMeterL": {
       "origin": [
-        82,
+        67,
         108
       ],
       "size": [
@@ -151,9 +151,31 @@
       ],
       "segments": 12
     },
-    "kOutputMeter": {
+    "kInputMeterR": {
       "origin": [
-        167,
+        98,
+        108
+      ],
+      "size": [
+        25,
+        226
+      ],
+      "segments": 12
+    },
+    "kOutputMeterL": {
+      "origin": [
+        151,
+        108
+      ],
+      "size": [
+        25,
+        226
+      ],
+      "segments": 12
+    },
+    "kOutputMeterR": {
+      "origin": [
+        182,
         108
       ],
       "size": [

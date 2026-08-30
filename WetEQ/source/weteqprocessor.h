@@ -41,12 +41,16 @@ protected:
     EQEngine engine;
     EQEngine::Settings pending;
 
-    // Peak meters. The panel has one IN and one OUT strip, so each follows the
-    // louder of the two channels.
-    std::atomic<float> inputPeak{0.0f};
-    std::atomic<float> outputPeak{0.0f};
-    float oldInputMeter = 0.0f;
-    float oldOutputMeter = 0.0f;
+    // Peak meters, one per channel per bus: the panel has a left and a right
+    // column for IN and for OUT.
+    std::atomic<float> inputPeakL{0.0f};
+    std::atomic<float> inputPeakR{0.0f};
+    std::atomic<float> outputPeakL{0.0f};
+    std::atomic<float> outputPeakR{0.0f};
+    float oldInputMeterL = 0.0f;
+    float oldInputMeterR = 0.0f;
+    float oldOutputMeterL = 0.0f;
+    float oldOutputMeterR = 0.0f;
 
     static constexpr float kMeterDecay = 0.9995f;
 
