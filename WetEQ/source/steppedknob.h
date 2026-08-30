@@ -16,9 +16,10 @@ namespace Yonie {
 // decision instead of inviting a 0.5 dB fiddle. That means:
 //
 //   * the value always snaps to a detent, however it was changed
-//   * one mouse-wheel notch moves exactly one detent, as the Waves SSL plugins
-//     do. VSTGUI's default wheel increment is 0.1 of the full range, which on
-//     an 11-position knob would jump an inconsistent number of steps.
+//   * one mouse-wheel notch moves exactly one detent, which is what every
+//     console-style plugin does. VSTGUI's default wheel increment is 0.1 of the
+//     full range, which on an 11-position knob would jump an inconsistent
+//     number of steps.
 //   * dragging moves through the detents rather than sliding between them
 //
 // The filmstrip is authored with exactly one frame per position, so the frame
