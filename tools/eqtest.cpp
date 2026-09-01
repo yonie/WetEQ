@@ -203,7 +203,11 @@ int main()
         {
             for (int dir = 0; dir < 2; ++dir)
             {
-                const int pos = (dir == 0) ? 10 : 0;      // +15 dB or -15 dB
+                // Derived, never written as 10: that literal was right for
+                // eleven steps, overshot to +22.5 dB at nine (and passed only
+                // because saturation pulled it back inside tolerance), and
+                // lands on +3.75 dB at seventeen.
+                const int pos = (dir == 0) ? EQRange::kBandGainSteps - 1 : 0;
                 const double want = (dir == 0) ? 15.0 : -15.0;
 
                 EQEngine::Settings s = flat;
@@ -248,10 +252,18 @@ int main()
             return centre > 0.1 ? octaveUp / centre : 0.0;
         };
 
-        const double smallPush = widthAt(6);    // +3 dB
-        const double bigPush   = widthAt(10);   // +15 dB
-        std::printf("  +3 dB  keeps %.0f%% of its boost one octave up\n", smallPush * 100.0);
-        std::printf("  +15 dB keeps %.0f%% of its boost one octave up\n", bigPush * 100.0);
+        // One detent above centre against the top detent - derived, because
+        // 6 and 10 were eleven-step literals and at seventeen the first of them
+        // is a CUT, which makes the comparison meaningless rather than failing
+        // it honestly.
+        const int smallPos = EQRange::kBandGainSteps / 2 + 1;
+        const int bigPos   = EQRange::kBandGainSteps - 1;
+        const double smallPush = widthAt(smallPos);
+        const double bigPush   = widthAt(bigPos);
+        std::printf("  %+.1f dB keeps %.0f%% of its boost one octave up\n",
+                    eng.bandGainDb(smallPos), smallPush * 100.0);
+        std::printf("  %+.1f dB keeps %.0f%% of its boost one octave up\n",
+                    eng.bandGainDb(bigPos), bigPush * 100.0);
         const bool ok = bigPush < smallPush;
         if (!ok) ++failures;
         std::printf("  %-46s %s\n", "larger boost is proportionally narrower",
@@ -342,7 +354,7 @@ int main()
         // The HF band's top positions sit above the 12 kHz Nyquist. Ronald
         // accepted that cost knowingly; what must NOT happen is instability.
         EQEngine::Settings s = flat;
-        s.hfGain = 10;
+        s.hfGain = EQRange::kBandGainSteps - 1;
         s.hfFreq = EQRange::kFreqSteps - 1;    // 22 kHz, above Nyquist
         eng.setSettings(s);
         std::printf("  HF asked for %.0f Hz at a %.0f Hz internal rate "

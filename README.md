@@ -16,7 +16,7 @@ bandwidth of a large-format desk.
 - **Four Bands**: LF shelf, LMF bell, HMF bell and HF shelf, each +/-15 dB
 - **Two Filters**: High-pass and low-pass, both leaving circuit at the ends of their travel
 - **Input Drive**: GAIN pushes the input amplifier ahead of the equaliser
-- **Stepped Controls**: All eleven knobs, nine positions each
+- **Stepped Controls**: All eleven knobs, seventeen positions each
 - **Visual Metering**: Real-time peak level meters for input and output
 - **VST3 Automation**: Full parameter automation support in DAWs
 
@@ -111,19 +111,21 @@ This is a common issue with free audio plugins on macOS. You'll encounter the sa
 
 | Parameter | Range | Per detent |
 |-----------|-------|------------|
-| GAIN | +/-20 dB | 5 dB |
-| HPF | 20 Hz - 2 kHz | x1.74 |
-| LPF | 2 - 20 kHz | x1.33 |
-| LF shelf | 30 - 600 Hz | x1.45 |
-| LMF bell | 100 Hz - 4 kHz | x1.55 |
-| HMF bell | 400 Hz - 10 kHz | x1.49 |
-| HF shelf | 1.5 - 22 kHz | x1.39 |
-| Band gain (x4) | +/-15 dB | 3.75 dB |
+| GAIN | +/-20 dB | 2.5 dB |
+| HPF | 20 Hz - 2 kHz | x1.33 |
+| LPF | 2 - 20 kHz | x1.15 |
+| LF shelf | 30 - 600 Hz | x1.21 |
+| LMF bell | 100 Hz - 4 kHz | x1.26 |
+| HMF bell | 400 Hz - 10 kHz | x1.22 |
+| HF shelf | 1.5 - 22 kHz | x1.18 |
+| Band gain (x4) | +/-15 dB | 1.875 dB |
 
 Frequency knobs are log-spaced with the printed endpoints exact. Every control is
-stepped, nine positions each: the smallest move available on a band is 3.75 dB,
-which is coarse on purpose - the same reasoning behind WetDelay's six fixed delay
-times.
+stepped, seventeen positions each, and the centre position is a real detent - 0 dB
+on the gain knobs, so any band can be taken out of circuit exactly.
+
+The knobs are stepped rather than continuous on purpose - a fixed set of
+positions asks for a decision instead of a fiddle.
 
 ### Mouse
 
@@ -400,6 +402,11 @@ See the VST3 SDK license files for details on SDK licensing.
 
 
 ## Version History
+
+### v1.1.0 (2026-09-01)
+- More steps on every knob, based on user feedback: seventeen positions instead
+  of nine, so the smallest move on a band is 1.875 dB rather than 3.75 dB.
+  Existing sessions and presets reload unchanged.
 
 ### v1.0.0 (2026-08-30)
 - Initial release
