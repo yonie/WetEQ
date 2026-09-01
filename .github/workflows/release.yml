@@ -192,14 +192,18 @@ jobs:
           # The Installation block below is REQUIRED and stays: people land on the
           # release page from an aggregator with no idea what to do with a .vst3.
           body: |
-            **WetEQ 1.0.0 - first release**
+            **WetEQ 1.1.0 - more steps on every knob**
+
+            Based on user feedback: nine positions per knob turned out to be too coarse for
+            small balancing moves, so every control now has seventeen. The smallest move on
+            a band is 1.875 dB instead of 3.75 dB, and GAIN steps in 2.5 dB. The controls
+            are still stepped, the ranges are unchanged, and existing sessions and presets
+            reload exactly as you left them.
 
             A four-band console equaliser with the saturation, crosstalk and gain-dependent
-            Q of a large-format desk. Eleven stepped controls, nine positions each.
-
-            With every control out of circuit the response is within plus or minus 0.1 dB
-            from 20 Hz to 20 kHz. GAIN drives the input amplifier rather than trimming the
-            output, so it colours as you push it.
+            Q of a large-format desk. With every control out of circuit the response is
+            within plus or minus 0.1 dB from 20 Hz to 20 kHz. GAIN drives the input
+            amplifier rather than trimming the output, so it colours as you push it.
 
             Windows, macOS (Intel and Apple Silicon) and Linux in one download.
 

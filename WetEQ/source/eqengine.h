@@ -38,15 +38,23 @@ namespace Yonie {
 //------------------------------------------------------------------------
 namespace EQRange {
 
-// Every knob has NINE positions, because the panel art paints nine tick dots
-// around each one. Odd, so the centre detent is a real position: 0 dB on the
-// gain knobs, and unity is reachable. A band you cannot defeat is a defect
-// rather than a constraint, and real console gain pots have a centre detent.
+// Every knob has SEVENTEEN positions - the nine painted detents with one extra
+// between each pair. Nine was genuinely too coarse: the smallest band move was
+// 3.75 dB, and the first user to say so needed 0.5-1 dB on vocals and masters.
+// Odd, so the centre detent is still a real position: 0 dB on the gain knobs,
+// and unity is reachable. A band you cannot defeat is a defect rather than a
+// constraint, and real console gain pots have a centre detent.
 //
-// All three counts are deliberately the same number. If one ever diverges the
-// pointer stops landing on a painted dot, which is what happened when the
-// frequency knobs were 10 and the gain knobs 11.
-constexpr int    kSteps = 9;
+// The pointer still lands on a painted tick dot at every EVEN step, because 17
+// is 2*9-1 and the old grid is a subset of the new one. That is why the count
+// doubles rather than moving to some other number, and why all three counts
+// stay the same: when the frequency knobs were 10 and the gain knobs 11 the
+// pointer stopped landing on a dot at all.
+//
+// Every stored preset and session also survives, for the same reason: a step
+// that was i/8 normalised is exactly 2i/16 now, so old values reload as the
+// same dB and Hz.
+constexpr int    kSteps = 17;
 
 constexpr int    kBandGainSteps = kSteps;
 constexpr double kBandGainMin   = -15.0;
