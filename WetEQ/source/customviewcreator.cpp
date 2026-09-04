@@ -16,6 +16,7 @@ static const std::string kAttrHorizontal  = "horizontal";
 static const std::string kAttrDbMin       = "db-min";
 static const std::string kAttrDbMax       = "db-max";
 static const std::string kAttrStepCount   = "step-count";
+static const std::string kAttrCoarseStep  = "coarse-step";
 
 //------------------------------------------------------------------------
 // LEDMeterViewCreator
@@ -116,18 +117,27 @@ bool SteppedKnobCreator::apply(CView* view, const UIAttributes& attributes,
     if (attributes.getIntegerAttribute(kAttrStepCount, steps) && steps > 1)
         knob->setStepCount(steps);
 
+    // How many of those steps make one ordinary detent. Absent means 1, so a
+    // knob without the attribute behaves exactly as it did before Shift
+    // existed: every step reachable, no modifier needed.
+    int32_t coarse = 0;
+    if (attributes.getIntegerAttribute(kAttrCoarseStep, coarse) && coarse > 1)
+        knob->setCoarseStep(coarse);
+
     return true;
 }
 
 bool SteppedKnobCreator::getAttributeNames(StringList& names) const
 {
     names.emplace_back(kAttrStepCount);
+    names.emplace_back(kAttrCoarseStep);
     return true;
 }
 
 IViewCreator::AttrType SteppedKnobCreator::getAttributeType(const string& name) const
 {
-    if (name == kAttrStepCount) return kIntegerType;
+    if (name == kAttrStepCount)  return kIntegerType;
+    if (name == kAttrCoarseStep) return kIntegerType;
     return kUnknownType;
 }
 
@@ -140,6 +150,11 @@ bool SteppedKnobCreator::getAttributeValue(CView* view, const string& name,
     if (name == kAttrStepCount)
     {
         value = std::to_string(knob->getStepCount());
+        return true;
+    }
+    if (name == kAttrCoarseStep)
+    {
+        value = std::to_string(knob->getCoarseStep());
         return true;
     }
     return false;
