@@ -16,7 +16,7 @@ bandwidth of a large-format desk.
 - **Four Bands**: LF shelf, LMF bell, HMF bell and HF shelf, each +/-15 dB
 - **Two Filters**: High-pass and low-pass, both leaving circuit at the ends of their travel
 - **Input Drive**: GAIN pushes the input amplifier ahead of the equaliser
-- **Stepped Controls**: All eleven knobs, seventeen positions each
+- **Stepped Controls**: All eleven knobs, seventeen detents each - hold Shift for four times finer
 - **Visual Metering**: Real-time peak level meters for input and output
 - **VST3 Automation**: Full parameter automation support in DAWs
 
@@ -109,27 +109,31 @@ This is a common issue with free audio plugins on macOS. You'll encounter the sa
 
 ### Parameter Reference
 
-| Parameter | Range | Per detent |
-|-----------|-------|------------|
-| GAIN | +/-20 dB | 2.5 dB |
-| HPF | 20 Hz - 2 kHz | x1.33 |
-| LPF | 2 - 20 kHz | x1.15 |
-| LF shelf | 30 - 600 Hz | x1.21 |
-| LMF bell | 100 Hz - 4 kHz | x1.26 |
-| HMF bell | 400 Hz - 10 kHz | x1.22 |
-| HF shelf | 1.5 - 22 kHz | x1.18 |
-| Band gain (x4) | +/-15 dB | 1.875 dB |
+| Parameter | Range | Per detent | Holding Shift |
+|-----------|-------|------------|---------------|
+| GAIN | +/-20 dB | 2.5 dB | 0.625 dB |
+| HPF | 20 Hz - 2 kHz | x1.33 | x1.07 |
+| LPF | 2 - 20 kHz | x1.15 | x1.04 |
+| LF shelf | 30 - 600 Hz | x1.21 | x1.05 |
+| LMF bell | 100 Hz - 4 kHz | x1.26 | x1.06 |
+| HMF bell | 400 Hz - 10 kHz | x1.22 | x1.05 |
+| HF shelf | 1.5 - 22 kHz | x1.18 | x1.04 |
+| Band gain (x4) | +/-15 dB | 1.875 dB | 0.469 dB |
 
 Frequency knobs are log-spaced with the printed endpoints exact. Every control is
-stepped, seventeen positions each, and the centre position is a real detent - 0 dB
+stepped, seventeen detents each, and the centre position is a real detent - 0 dB
 on the gain knobs, so any band can be taken out of circuit exactly.
 
 The knobs are stepped rather than continuous on purpose - a fixed set of
-positions asks for a decision instead of a fiddle.
+positions asks for a decision instead of a fiddle. Hold **Shift** while dragging,
+scrolling or arrowing and you get four times the resolution between the same
+endpoints: 0.5 dB moves for vocals and masters, without turning the knob into a
+continuous pot. The detents are still where the decisions are made.
 
 ### Mouse
 
-- **Wheel**: one detent per notch
+- **Wheel**: one detent per notch, or a quarter of one with Shift held
+- **Shift-drag**: fine adjust, four steps inside every detent
 - **Right-click the panel**: UI Zoom - 75%, 100% or 125%
 
 ![Specification](docs/signal-path.png)

@@ -81,14 +81,17 @@
 		      db-max="18"
 		      transparent="false"/>
 
-		<!-- Stepped knobs. One filmstrip frame per detent, so the frame
-		     index is the step index. Mouse wheel up = clockwise. -->
+		<!-- Stepped knobs. One filmstrip frame per FINE step, so the frame
+		     index is the step index. The knob rests on every
+		     coarse-step-th of them; Shift reaches the rest.
+		     Mouse wheel up = clockwise. -->
 		<view class="SteppedKnob"
 		      control-tag="kHFGainParam"
 		      origin="281, 113"
 		      size="83, 83"
 		      bitmap="knob_hf_gain"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -96,7 +99,8 @@
 		      origin="412, 115"
 		      size="80, 80"
 		      bitmap="knob_hf_freq"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -104,7 +108,8 @@
 		      origin="279, 296"
 		      size="84, 84"
 		      bitmap="knob_hmf_gain"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -112,7 +117,8 @@
 		      origin="409, 295"
 		      size="85, 85"
 		      bitmap="knob_hmf_freq"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -120,7 +126,8 @@
 		      origin="78, 413"
 		      size="104, 104"
 		      bitmap="knob_gain"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -128,7 +135,8 @@
 		      origin="281, 480"
 		      size="82, 82"
 		      bitmap="knob_lmf_gain"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -136,7 +144,8 @@
 		      origin="412, 479"
 		      size="81, 81"
 		      bitmap="knob_lmf_freq"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -144,7 +153,8 @@
 		      origin="31, 607"
 		      size="82, 82"
 		      bitmap="knob_hpf"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -152,7 +162,8 @@
 		      origin="146, 607"
 		      size="82, 82"
 		      bitmap="knob_lpf"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -160,7 +171,8 @@
 		      origin="283, 653"
 		      size="81, 81"
 		      bitmap="knob_lf_gain"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 		<view class="SteppedKnob"
@@ -168,7 +180,8 @@
 		      origin="412, 653"
 		      size="81, 81"
 		      bitmap="knob_lf_freq"
-		      step-count="17"
+		      step-count="65"
+		      coarse-step="4"
 		      transparent="true"/>
 
 	</template>
@@ -182,47 +195,47 @@
 		<bitmap name="backplate" path="backplate.png"/>
 		<bitmap name="knob_hf_gain" path="knob_hf_gain.png"
 		        multiframe-size="83, 83"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hf_freq" path="knob_hf_freq.png"
 		        multiframe-size="80, 80"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hmf_gain" path="knob_hmf_gain.png"
 		        multiframe-size="84, 84"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hmf_freq" path="knob_hmf_freq.png"
 		        multiframe-size="85, 85"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_gain" path="knob_gain.png"
 		        multiframe-size="104, 104"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lmf_gain" path="knob_lmf_gain.png"
 		        multiframe-size="82, 82"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lmf_freq" path="knob_lmf_freq.png"
 		        multiframe-size="81, 81"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_hpf" path="knob_hpf.png"
 		        multiframe-size="82, 82"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lpf" path="knob_lpf.png"
 		        multiframe-size="82, 82"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lf_gain" path="knob_lf_gain.png"
 		        multiframe-size="81, 81"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 		<bitmap name="knob_lf_freq" path="knob_lf_freq.png"
 		        multiframe-size="81, 81"
-		        multiframe-num-frames="17"
+		        multiframe-num-frames="65"
 		        mulitframe-frames-per-row="1"/>
 	</bitmaps>
 </vstgui-ui-description>
