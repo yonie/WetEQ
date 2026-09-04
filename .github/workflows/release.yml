@@ -198,7 +198,6 @@ jobs:
 
             - More steps per knob: 17 instead of 9. The smallest move on a band is 1.875 dB instead of 3.75 dB, and GAIN steps in 2.5 dB.
             - Power user mode: hold **Shift** while dragging, scrolling or using the arrow keys for 4x the resolution - 0.469 dB on a band, 0.625 dB on GAIN.
-            - Projects saved with 1.0.0 reload at the values you saved them with.
 
             A four-band console equaliser with the saturation, crosstalk and gain-dependent Q of a large-format desk. With every control out of circuit the response is within plus or minus 0.1 dB from 20 Hz to 20 kHz. GAIN drives the input amplifier rather than trimming the output, so it colours as you push it.
 
