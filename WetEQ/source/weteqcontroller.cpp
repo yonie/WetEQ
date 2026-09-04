@@ -197,14 +197,36 @@ tresult PLUGIN_API WetEQController::setComponentState(IBStream* state)
 
     using namespace EQRange;
 
+    // Same read as WetEQProcessor::setState, and it has to stay the same: the
+    // two sides are handed the identical stream and a disagreement shows up as
+    // a UI that does not match what you hear.
+    int32 savedSteps = 0;
+    if (version >= 2)
+        streamer.readInt32(savedSteps);
+
+    constexpr int kValues = 11;
+    int32 raw[kValues] = {};
+    int count = 0;
+    int32 highest = 0;
+    for (; count < kValues; ++count)
+    {
+        if (!streamer.readInt32(raw[count]))
+            break;
+        if (raw[count] > highest)
+            highest = raw[count];
+    }
+
+    if (savedSteps <= 1)
+        savedSteps = guessLegacySteps(highest);
+
+    int idx = 0;
     auto restore = [&](Vst::ParamID id, int steps) {
-        int32 v = 0;
-        if (streamer.readInt32(v))
+        if (idx < count)
         {
-            if (v < 0) v = 0;
-            if (v > steps - 1) v = steps - 1;
+            const int v = rescaleStep(raw[idx], savedSteps);
             setParamNormalized(id, steps > 1 ? static_cast<double>(v) / (steps - 1) : 0.0);
         }
+        ++idx;
     };
 
     restore(kGainParam, kMasterGainSteps);
