@@ -192,13 +192,21 @@ jobs:
           # The Installation block below is REQUIRED and stays: people land on the
           # release page from an aggregator with no idea what to do with a .vst3.
           body: |
-            **WetEQ 1.1.0 - more steps on every knob**
+            **WetEQ 1.1.1 - projects saved with 1.0.0 or 1.1.0 reload correctly**
 
-            Based on user feedback: nine positions per knob turned out to be too coarse for
-            small balancing moves, so every control now has seventeen. The smallest move on
-            a band is 1.875 dB instead of 3.75 dB, and GAIN steps in 2.5 dB. The controls
-            are still stepped, the ranges are unchanged, and existing sessions and presets
-            reload exactly as you left them.
+            This replaces 1.1.0, which has been taken down. 1.1.0 doubled the number of
+            positions on every knob but read older projects on the old scale, so opening a
+            project saved with WetEQ 1.0.0 moved every control on the panel: bands parked
+            at 0 dB came back at -7.5 dB, GAIN at -10 dB, and the LPF fell from fully open
+            to 6.3 kHz. 1.1.1 reads projects saved by 1.0.0 and by 1.1.0 at the values you
+            left them at. If you have 1.1.0 installed, replace it with this build.
+
+            One thing it cannot undo: if you opened a 1.0.0 project in 1.1.0 and saved it,
+            the moved values are what your project now stores, and nothing can tell them
+            from settings you chose. Worth checking any project that started in 1.0.0 and
+            was saved with 1.1.0.
+
+            Nothing else changed - seventeen positions per knob, same ranges, same sound.
 
             A four-band console equaliser with the saturation, crosstalk and gain-dependent
             Q of a large-format desk. With every control out of circuit the response is
