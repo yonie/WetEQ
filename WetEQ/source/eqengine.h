@@ -95,6 +95,36 @@ inline double stepToLog(int index, int steps, double lo, double hi)
     return lo * std::pow(hi / lo, t);
 }
 
+
+// Saved state carries step INDICES, so every change to kSteps silently moves
+// every stored session unless the grid it was written on is known. From state
+// version 2 the stream says so outright. Version 1 does not - it was written by
+// both the nine-detent v1.0.0 and the seventeen-detent v1.1.0, which is exactly
+// the bug this closes - so it is inferred: an index above 8 cannot have come
+// from a nine-position knob.
+//
+// tools/upgrade-weteq.py in the hub proves this against blobs the older builds
+// actually wrote. Run it for every release. An upgrade that moves a control is
+// somebody's mix quietly changing underneath them.
+constexpr int kLegacySteps9  = 9;
+constexpr int kLegacySteps17 = 17;
+
+inline int guessLegacySteps(int maxIndexSeen)
+{
+    return maxIndexSeen > (kLegacySteps9 - 1) ? kLegacySteps17 : kLegacySteps9;
+}
+
+// Move an index from the grid it was saved on to the current one. Every grid
+// this plugin has shipped divides into the current one, so this is exact.
+inline int rescaleStep(int index, int fromSteps)
+{
+    if (fromSteps <= 1) return 0;
+    if (index < 0) index = 0;
+    if (index > fromSteps - 1) index = fromSteps - 1;
+    if (fromSteps == kSteps) return index;
+    return (index * (kSteps - 1)) / (fromSteps - 1);
+}
+
 } // namespace EQRange
 
 //------------------------------------------------------------------------

@@ -227,10 +227,36 @@ tresult PLUGIN_API WetEQProcessor::setState(IBStream* state)
     if (!streamer.readInt32(version))
         return kResultFalse;
 
+    // Which grid the indices below were written on. Version 2 says so outright;
+    // version 1 has to be inferred, because both the nine-detent v1.0.0 and the
+    // seventeen-detent v1.1.0 wrote a bare 1.
+    int32 savedSteps = 0;
+    if (version >= 2)
+        streamer.readInt32(savedSteps);
+
+    constexpr int kValues = 11;
+    int32 raw[kValues] = {};
+    int count = 0;
+    int32 highest = 0;
+    for (; count < kValues; ++count)
+    {
+        if (!streamer.readInt32(raw[count]))
+            break;
+        if (raw[count] > highest)
+            highest = raw[count];
+    }
+
+    if (savedSteps <= 1)
+        savedSteps = EQRange::guessLegacySteps(highest);
+
+    // Anything the stream did not carry keeps its default rather than becoming
+    // index 0, which on a gain knob is full cut.
     EQEngine::Settings s;
-    int32 v = 0;
+    int idx = 0;
     auto rd = [&](int& dst) {
-        if (streamer.readInt32(v)) dst = v;
+        if (idx < count)
+            dst = EQRange::rescaleStep(raw[idx], savedSteps);
+        ++idx;
     };
     rd(s.gain);
     rd(s.hpf);   rd(s.lpf);
@@ -254,7 +280,12 @@ tresult PLUGIN_API WetEQProcessor::getState(IBStream* state)
 
     // Versioned from the start so a later parameter addition can still load an
     // old session. WetDelay wrote a bare int and has no room to grow.
-    streamer.writeInt32(1);
+    //
+    // Version 2 also writes the step count, so the indices below can be read
+    // back onto whatever grid a later build uses. Version 1 did not, and 9 ->
+    // 17 moved every saved session by a factor of two without noticing.
+    streamer.writeInt32(2);
+    streamer.writeInt32(EQRange::kSteps);
 
     const EQEngine::Settings& s = engine.settings();
     streamer.writeInt32(s.gain);
