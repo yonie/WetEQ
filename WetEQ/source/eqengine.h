@@ -38,23 +38,28 @@ namespace Yonie {
 //------------------------------------------------------------------------
 namespace EQRange {
 
-// Every knob has SEVENTEEN positions - the nine painted detents with one extra
-// between each pair. Nine was genuinely too coarse: the smallest band move was
-// 3.75 dB, and the first user to say so needed 0.5-1 dB on vocals and masters.
-// Odd, so the centre detent is still a real position: 0 dB on the gain knobs,
-// and unity is reachable. A band you cannot defeat is a defect rather than a
-// constraint, and real console gain pots have a centre detent.
+// Every knob has SIXTY-FIVE positions, but you only land on seventeen of them
+// unless you hold Shift. The knob is still a stepped encoder that forces a
+// decision; Shift is the power-user door out of it, for the 0.5 dB moves that
+// vocals and masters need. Nine was too coarse (3.75 dB a step), seventeen was
+// better (1.875 dB) and still too heavy-handed on a lot of sources - both
+// reported by the same user, who was right twice.
 //
-// The pointer still lands on a painted tick dot at every EVEN step, because 17
-// is 2*9-1 and the old grid is a subset of the new one. That is why the count
-// doubles rather than moving to some other number, and why all three counts
-// stay the same: when the frequency knobs were 10 and the gain knobs 11 the
-// pointer stopped landing on a dot at all.
+// 65 = 4*16+1, so the grid quadruples and every earlier grid survives inside
+// it: an old step lands exactly on a multiple of kCoarseStep, the centre detent
+// is still a real position (0 dB, unity reachable), and the pointer still lands
+// on a painted tick dot every eighth step. A count that is not 4*16+1 breaks
+// all three.
 //
-// Every stored preset and session also survives, for the same reason: a step
-// that was i/8 normalised is exactly 2i/16 now, so old values reload as the
-// same dB and Hz.
-constexpr int    kSteps = 17;
+// Band steps are 0.469 dB, master 0.625 dB. Not exactly 0.5 - 61 steps would be
+// exactly 0.5 on the bands and would break the alignment above, which matters
+// more than a round number in a spec sheet.
+constexpr int    kSteps = 65;
+
+// Detents reachable WITHOUT a modifier: every kCoarseStep-th position, which is
+// the seventeen-detent grid v1.1.0 shipped. Shift while dragging, scrolling or
+// arrowing reaches every step. The UI reads this; the DSP does not care.
+constexpr int    kCoarseStep = 4;
 
 constexpr int    kBandGainSteps = kSteps;
 constexpr double kBandGainMin   = -15.0;
@@ -93,6 +98,32 @@ inline double stepToLog(int index, int steps, double lo, double hi)
     if (index >= steps) index = steps - 1;
     const double t = static_cast<double>(index) / (steps - 1);
     return lo * std::pow(hi / lo, t);
+}
+
+
+// Saved state carries step INDICES, so every change to kSteps would silently
+// move every stored session unless the grid it was written on is known. From
+// state version 2 the stream says so outright. Version 1 does not - it was
+// written by both the nine-detent v1.0.0 and the seventeen-detent v1.1.0, which
+// is exactly the bug this closes - so it is inferred: an index above 8 cannot
+// have come from a nine-position knob.
+constexpr int kLegacySteps9  = 9;
+constexpr int kLegacySteps17 = 17;
+
+inline int guessLegacySteps(int maxIndexSeen)
+{
+    return maxIndexSeen > (kLegacySteps9 - 1) ? kLegacySteps17 : kLegacySteps9;
+}
+
+// Move an index from the grid it was saved on to the current one. Every grid
+// this plugin has shipped divides into 65, so this is exact.
+inline int rescaleStep(int index, int fromSteps)
+{
+    if (fromSteps <= 1) return 0;
+    if (index < 0) index = 0;
+    if (index > fromSteps - 1) index = fromSteps - 1;
+    if (fromSteps == kSteps) return index;
+    return (index * (kSteps - 1)) / (fromSteps - 1);
 }
 
 } // namespace EQRange

@@ -252,11 +252,13 @@ int main()
             return centre > 0.1 ? octaveUp / centre : 0.0;
         };
 
-        // One detent above centre against the top detent - derived, because
-        // 6 and 10 were eleven-step literals and at seventeen the first of them
-        // is a CUT, which makes the comparison meaningless rather than failing
-        // it honestly.
-        const int smallPos = EQRange::kBandGainSteps / 2 + 1;
+        // One COARSE detent above centre against the top detent - derived,
+        // because 6 and 10 were eleven-step literals and at seventeen the first
+        // of them is a CUT, which makes the comparison meaningless rather than
+        // failing it honestly. Coarse, not fine: at sixty-five steps one fine
+        // step is 0.47 dB and the two curves are then too close to say anything
+        // about proportional Q.
+        const int smallPos = EQRange::kBandGainSteps / 2 + EQRange::kCoarseStep;
         const int bigPos   = EQRange::kBandGainSteps - 1;
         const double smallPush = widthAt(smallPos);
         const double bigPush   = widthAt(bigPos);
