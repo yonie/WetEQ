@@ -11,6 +11,8 @@ bandwidth of a large-format desk.
 
 ![WetEQ Plugin Screenshot](docs/panel.png)
 
+> **Panel too big or too small?** Right-click anywhere on the panel and pick **UI Zoom** - 75%, 100% or 125%.
+
 ## Features
 
 - **Four Bands**: LF shelf, LMF bell, HMF bell and HF shelf, each +/-15 dB
@@ -19,6 +21,7 @@ bandwidth of a large-format desk.
 - **Stepped Controls**: All eleven knobs, seventeen detents each - hold Shift for four times finer
 - **Visual Metering**: Real-time peak level meters for input and output
 - **VST3 Automation**: Full parameter automation support in DAWs
+- **Resizable UI**: Right-click the panel for UI Zoom - 75%, 100% or 125%
 
 ### Console Character
 
