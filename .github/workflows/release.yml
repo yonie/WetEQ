@@ -178,7 +178,8 @@ jobs:
       - name: Create ZIP archive
         run: |
           cd build
-          zip -r ../WetEQ-${{ github.ref_name }}.zip WetEQ.vst3
+          cp ../packaging/README.txt .
+          zip -r ../WetEQ-${{ github.ref_name }}.zip WetEQ.vst3 README.txt
           ls -la ../WetEQ-${{ github.ref_name }}.zip
 
       - name: Create Release
