@@ -3,7 +3,7 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![VST3](https://img.shields.io/badge/VST3-Compatible-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
-![Version](https://img.shields.io/badge/version-1.0.0-orange)
+[![Version](https://img.shields.io/github/v/release/yonie/WetEQ?label=version&color=orange)](https://github.com/yonie/WetEQ/releases/latest)
 
 A four-band British console equaliser VST3 plugin, modelled as a circuit rather
 than as a frequency response, with the saturation, crosstalk and gain-dependent
@@ -407,33 +407,6 @@ See the VST3 SDK license files for details on SDK licensing.
 - VSTGUI framework for cross-platform GUI support
 - The audio plugin development community
 
-
-## Version History
-
-### v1.1.0 (2026-09-01)
-- More steps on every knob, based on user feedback: seventeen positions instead
-  of nine, so the smallest move on a band is 1.875 dB rather than 3.75 dB.
-  Existing sessions and presets reload unchanged.
-
-### v1.0.0 (2026-08-30)
-- Initial release
-- Four bands plus high-pass, low-pass and input drive
-- Eleven stepped controls, nine positions each
-- Input/output peak metering
-- Full VST3 automation support
-- Validated with official VST3 validator
-- **Modelled as a circuit**:
-  - State-variable stages in topology-preserving form
-  - Saturation inside the filter loop, where the op-amp is
-  - Bandwidth derived from the boost/cut pot damping a gyrator tank
-- **Per-Stage Noise and Crosstalk**:
-  - -40 dB channel bleed distributed across all six stages
-  - 2.5% component tolerance per channel
-
-
----
-
-**Built with ❤️ and precision engineering**
 
 ## Support
 
