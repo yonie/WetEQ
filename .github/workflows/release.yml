@@ -250,16 +250,15 @@ jobs:
           # The Installation block below is REQUIRED and stays: people land on the
           # release page from an aggregator with no idea what to do with a .vst3.
           body: |
-            **WetEQ 1.1.1**
+            **WetEQ 1.2.0**
 
-            What changed since 1.0.0:
+            What's new:
 
-            - More steps per knob: 17 instead of 9. The smallest move on a band is 1.875 dB instead of 3.75 dB, and GAIN steps in 2.5 dB.
-            - Power user mode: hold **Shift** while dragging, scrolling or using the arrow keys for 4x the resolution - 0.469 dB on a band, 0.625 dB on GAIN.
+            - An Audio Unit for Logic and GarageBand, next to the VST3.
+            - Signed and notarised by Apple, so macOS opens it without a warning.
+            - Mono tracks now work (mono in to mono out, or mono in to stereo out).
 
-            A four-band console equaliser with the saturation, crosstalk and gain-dependent Q of a large-format desk. With every control out of circuit the response is within plus or minus 0.1 dB from 20 Hz to 20 kHz. GAIN drives the input amplifier rather than trimming the output, so it colours as you push it.
-
-            Windows, macOS (Intel and Apple Silicon) and Linux in one download.
+            The sound stays the same, and saved projects reload with the same settings.
 
             ### Resizing the panel
 
