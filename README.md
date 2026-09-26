@@ -384,12 +384,6 @@ See the VST3 SDK license files for details on SDK licensing.
 - The audio plugin development community
 
 
-## Support
-
-If you find this plugin helpful, consider buying me a coffee!
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/yonie)
-
 ---
 
 Part of **[WET](https://wetvst.com)** - with [WetDelay](https://github.com/yonie/WetDelay), [WetReverb](https://github.com/yonie/WetReverb) and [WetCompressor](https://github.com/yonie/WetCompressor)

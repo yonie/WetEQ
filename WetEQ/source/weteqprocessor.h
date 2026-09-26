@@ -7,6 +7,7 @@
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include "eqengine.h"
 #include "weteqcids.h"
+#include "monobus.h"
 #include <atomic>
 
 namespace Yonie {
@@ -29,6 +30,9 @@ public:
     Steinberg::tresult PLUGIN_API setupProcessing(Steinberg::Vst::ProcessSetup& newSetup) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API canProcessSampleSize(Steinberg::int32 symbolicSampleSize) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData& data) SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API setBusArrangements(Steinberg::Vst::SpeakerArrangement* inputs, Steinberg::int32 numIns,
+                                                 Steinberg::Vst::SpeakerArrangement* outputs, Steinberg::int32 numOuts) SMTG_OVERRIDE;
+    Wet::MonoBus monoBus;   // mono inputs and outputs, see monobus.h
     Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream* state) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream* state) SMTG_OVERRIDE;
 
