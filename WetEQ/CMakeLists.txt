@@ -12,7 +12,7 @@ endif()
 
 project(WetEQ
     # This is your plug-in version number. Change it here only.
-    VERSION 1.2.0.0
+    VERSION 1.2.1.0
     DESCRIPTION "WetEQ VST 3 Plug-in"
 )
 
