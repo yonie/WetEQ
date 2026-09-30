@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------
 
 #include "weteqcontroller.h"
+#include "weteditor.h"
 #include "weteqcids.h"
 #include "eqengine.h"
 #include "customviewcreator.h"
@@ -245,7 +246,7 @@ IPlugView* PLUGIN_API WetEQController::createView(FIDString name)
 {
     if (FIDStringsEqual(name, Vst::ViewType::kEditor))
     {
-        auto* editor = new VSTGUI::VST3Editor(this, "view", "weteqeditor.uidesc");
+        auto* editor = new Yonie::WetEditor(this, "view", "weteqeditor.uidesc");
 
         // Discrete zoom steps rather than a draggable window. VSTGUI puts these
         // in the editor's context menu and handles the resize itself.
