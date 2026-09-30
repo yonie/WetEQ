@@ -252,6 +252,8 @@ jobs:
           body: |
             **WetEQ 1.2.0**
 
+            Product page: https://wetvst.com/weteq/
+
             What's new:
 
             - An Audio Unit for Logic and GarageBand, next to the VST3.

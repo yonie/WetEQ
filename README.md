@@ -9,7 +9,9 @@ A four-band British console equaliser VST3 plugin, modelled as a circuit rather
 than as a frequency response, with the saturation, crosstalk and gain-dependent
 bandwidth of a large-format desk.
 
-![WetEQ Plugin Screenshot](docs/panel.png)
+**Download:** [wetvst.com/weteq](https://wetvst.com/weteq/)
+
+[![WetEQ Plugin Screenshot](docs/panel.png)](https://wetvst.com/weteq/)
 
 > **Panel too big or too small?** Right-click anywhere on the panel and pick **UI Zoom** - 75%, 100% or 125%.
 
@@ -37,7 +39,7 @@ bandwidth of a large-format desk.
 
 ### Windows
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/yonie/WetEQ/releases)
+1. **Download** the latest release from [wetvst.com](https://wetvst.com/weteq/) or [GitHub Releases](https://github.com/yonie/WetEQ/releases)
 2. **Extract** the ZIP file
 3. **Copy** `WetEQ.vst3` to your VST3 folder:
    - User: `C:\Users\[Username]\Documents\VST3\`
@@ -46,7 +48,7 @@ bandwidth of a large-format desk.
 
 ### Linux
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/yonie/WetEQ/releases)
+1. **Download** the latest release from [wetvst.com](https://wetvst.com/weteq/) or [GitHub Releases](https://github.com/yonie/WetEQ/releases)
 2. **Extract** the ZIP file
 3. **Copy** `WetEQ.vst3` to your VST3 folder:
    - User: `~/.vst3/`
@@ -55,7 +57,7 @@ bandwidth of a large-format desk.
 
 ### macOS
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/yonie/WetEQ/releases)
+1. **Download** the latest release from [wetvst.com](https://wetvst.com/weteq/) or [GitHub Releases](https://github.com/yonie/WetEQ/releases)
 2. **Extract** the ZIP file
 3. **Copy** `WetEQ.vst3` to your VST3 folder:
    ```
