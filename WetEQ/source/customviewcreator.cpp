@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------
 
 #include "customviewcreator.h"
+#include "meterlevel.h"
 #include "vstgui/uidescription/uiviewcreator.h"
 #include "vstgui/lib/cbitmap.h"
 
@@ -54,6 +55,8 @@ bool LEDMeterViewCreator::apply(CView* view, const UIAttributes& attributes,
     if (attributes.getDoubleAttribute(kAttrDbMin, lo) &&
         attributes.getDoubleAttribute(kAttrDbMax, hi))
         meter->setDbRange(lo, hi);
+    if (auto* ladder = attributes.getAttributeValue("db-thresholds"))
+        meter->setDbThresholds(Meter::parseList(*ladder));
 
     return true;
 }
@@ -65,6 +68,7 @@ bool LEDMeterViewCreator::getAttributeNames(StringList& names) const
     names.emplace_back(kAttrHorizontal);
     names.emplace_back(kAttrDbMin);
     names.emplace_back(kAttrDbMax);
+    names.emplace_back("db-thresholds");
     return true;
 }
 
