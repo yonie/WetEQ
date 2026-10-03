@@ -198,10 +198,10 @@ tresult PLUGIN_API WetEQProcessor::process(Vst::ProcessData& data)
             }
         };
 
-        sendMeter(kInputMeterL, inputPeakL.load(), oldInputMeterL);
-        sendMeter(kInputMeterR, inputPeakR.load(), oldInputMeterR);
-        sendMeter(kOutputMeterL, outputPeakL.load(), oldOutputMeterL);
-        sendMeter(kOutputMeterR, outputPeakR.load(), oldOutputMeterR);
+        sendMeter(kInputMeterL, Meter::encode(inputPeakL.load()), oldInputMeterL);
+        sendMeter(kInputMeterR, Meter::encode(inputPeakR.load()), oldInputMeterR);
+        sendMeter(kOutputMeterL, Meter::encode(outputPeakL.load()), oldOutputMeterL);
+        sendMeter(kOutputMeterR, Meter::encode(outputPeakR.load()), oldOutputMeterR);
     }
 
     monoBus.end(output, data.numSamples, outL, outR);
