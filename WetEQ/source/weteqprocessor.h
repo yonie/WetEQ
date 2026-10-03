@@ -8,6 +8,7 @@
 #include "eqengine.h"
 #include "weteqcids.h"
 #include "monobus.h"
+#include "meterlevel.h"
 #include <atomic>
 
 namespace Yonie {
