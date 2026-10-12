@@ -8,6 +8,7 @@ Build/
 WetEQ/build/
 */build/
 */Build/
+*/build-rel/
 
 # CMake
 CMakeCache.txt
