@@ -5,35 +5,24 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 [![Version](https://img.shields.io/github/v/release/yonie/WetEQ?label=version&color=orange)](https://github.com/yonie/WetEQ/releases/latest)
 
-A four-band British console equaliser VST3 plugin, modelled as a circuit rather
-than as a frequency response, with the saturation, crosstalk and gain-dependent
-bandwidth of a large-format desk.
+Flexible daily driver with low CPU use and classic sound.
 
 **Download:** [wetvst.com/weteq](https://wetvst.com/weteq/)
 
 [![WetEQ Plugin Screenshot](docs/panel.png)](https://wetvst.com/weteq/)
 
-> **Panel too big or too small?** Right-click anywhere on the panel and pick **UI Zoom** - 75%, 100% or 125%.
+> **Panel too big or too small?** Right-click anywhere on the panel and pick **UI Zoom**, from 50% to 125%.
 
 ## Features
 
-- **Four Bands**: LF shelf, LMF bell, HMF bell and HF shelf, each +/-15 dB
-- **Two Filters**: High-pass and low-pass, both leaving circuit at the ends of their travel
-- **Input Drive**: GAIN pushes the input amplifier ahead of the equaliser
-- **Stepped Controls**: All eleven knobs, seventeen detents each - hold Shift for four times finer
-- **Visual Metering**: Real-time peak level meters for input and output
-- **VST3 Automation**: Full parameter automation support in DAWs
-- **Resizable UI**: Right-click the panel for UI Zoom - 75%, 100% or 125%
+- 4 bands (LF shelf, LMF bell, HMF bell, HF shelf) matching popular 70s console workflows
+- Quickly clean up a track using the HPF, LPF and input GAIN with 17 stepped positions (hold Shift for precise control)
+- Very light on CPU - insert as many instances as you like!
+- Real-time L/R input and output LED metering
+- Resizable panel: right-click and zoom from 50% to 125%
+- GAIN pushes the input amplifier ahead of the equaliser
+- Full parameter automation in every major DAW
 
-### Console Character
-
-- **Circuit, Not Curve**: Every band is its own amplifier, saturating inside its own filter loop
-- **Gain-Dependent Bandwidth**: The bells take their Q from the boost/cut pot damping a gyrator tank, so a gentle move is broad and a hard one is tight - which is why there is no Q control on the panel
-- **Topology-Preserving Filters**: State-variable stages in TPT form, so a corner lands where it is asked to rather than a few percent low
-- **Per-Stage Saturation**: The nonlinearity sits in the integrator path, where the op-amp physically is, so a driven band detunes and compresses the way a real tank does
-- **Per-Stage Crosstalk and Noise**: Each of the six stages leaks into the other channel and contributes its own noise; -40 dB bleed, -87.7 dBFS floor
-- **Component Tolerance**: 2.5% per channel, so the two sides are never quite the same channel twice
-- **Nothing Resampled**: Flat is flat - +/-0.1 dB from 20 Hz to 20 kHz with every control out of circuit
 
 ## Download & Installation
 
@@ -115,7 +104,7 @@ continuous pot. The detents are still where the decisions are made.
 
 - **Wheel**: one detent per notch, or a quarter of one with Shift held
 - **Shift-drag**: fine adjust, four steps inside every detent
-- **Right-click the panel**: UI Zoom - 75%, 100% or 125%
+- **Right-click the panel**: UI Zoom, from 50% to 125%
 
 ![Specification](docs/signal-path.png)
 

@@ -44,9 +44,6 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
-		      db-min="-48"
-		      db-max="18"
-		      db-thresholds="-50, -40, -30, -24, -18, -12, -9, -6, -3, 0, 3, 6"
 		      transparent="false"/>
 
 		<view class="LEDMeterView"
@@ -56,9 +53,6 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
-		      db-min="-48"
-		      db-max="18"
-		      db-thresholds="-50, -40, -30, -24, -18, -12, -9, -6, -3, 0, 3, 6"
 		      transparent="false"/>
 
 		<view class="LEDMeterView"
@@ -68,9 +62,6 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
-		      db-min="-48"
-		      db-max="18"
-		      db-thresholds="-50, -40, -30, -24, -18, -12, -9, -6, -3, 0, 3, 6"
 		      transparent="false"/>
 
 		<view class="LEDMeterView"
@@ -80,9 +71,6 @@
 		      num-segments="12"
 		      segment-gap="6"
 		      horizontal="false"
-		      db-min="-48"
-		      db-max="18"
-		      db-thresholds="-50, -40, -30, -24, -18, -12, -9, -6, -3, 0, 3, 6"
 		      transparent="false"/>
 
 		<!-- Stepped knobs. One filmstrip frame per FINE step, so the frame

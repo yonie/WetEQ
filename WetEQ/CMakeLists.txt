@@ -81,7 +81,7 @@ smtg_target_configure_version_file(WetEQ)
 if(SMTG_MAC)
     smtg_target_set_bundle(WetEQ
         BUNDLE_IDENTIFIER org.yonie.vst3.weteq
-        COMPANY_NAME "Yonie"
+        COMPANY_NAME "WET VST"
     )
     smtg_target_set_debug_executable(WetEQ
         "/Applications/VST3PluginTestHost.app"
