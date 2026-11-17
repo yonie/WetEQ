@@ -55,7 +55,7 @@ jobs:
           WetEQ/build/bin/Release/validator WetEQ/build/VST3/Release/WetEQ.vst3
 
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
