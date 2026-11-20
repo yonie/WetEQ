@@ -9,6 +9,14 @@ this project uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-20
+
+### Fixed
+- Linux: the plug-in now loads on systems without `libxcb-cursor` installed, such as a fresh Linux Mint.
+
+### Changed
+- The sound and saved settings are unchanged.
+
 ## [1.2.1] - 2026-09-30
 
 ### Fixed
